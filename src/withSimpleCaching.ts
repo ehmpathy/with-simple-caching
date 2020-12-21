@@ -2,7 +2,7 @@ import { isAPromise } from './isAPromise';
 import { serialize } from './serialize';
 
 export interface SimpleCache<T> {
-  get: (key: string) => T;
+  get: (key: string) => T | null;
   set: (key: string, value: T) => void;
 }
 

@@ -55,8 +55,8 @@ import { withSimpleCaching } from 'with-simple-caching';
 const getRecipesFromApiWithLocalStorageCaching = withSimpleCaching(getRecipesFromApi, {
   // just define how a cache can `get` from and `set` to this data store
   cache: {
-    get: (key) => storage.getItem(key),
-    set: (key, value) => storage.setItem(key, value),
+    get: (key) => localStorage.getItem(key),
+    set: (key, value) => localStorage.setItem(key, value),
   },
 });
 ```
