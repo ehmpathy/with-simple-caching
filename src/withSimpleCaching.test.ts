@@ -55,7 +55,7 @@ describe('withSimpleCaching', () => {
     // define an example cache that can only deal with strings or numbers
     const store: Record<string, any> = {};
     const cache = {
-      set: (key: string, value: string | number) => {
+      set: (key: string, value: Promise<string | number>) => {
         store[key] = value;
       },
       get: (key: string) => store[key],

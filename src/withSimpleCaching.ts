@@ -20,7 +20,7 @@ export interface SimpleCache<T> {
  * expect(await result1).toBe(await result2); // same exact object - the result of the promise
  * ```
  */
-export const withSimpleCaching = <R extends any, L extends (...args: any[]) => R | Promise<R>>(logic: L, { cache }: { cache: SimpleCache<R> }) => {
+export const withSimpleCaching = <R extends any, L extends (...args: any[]) => R>(logic: L, { cache }: { cache: SimpleCache<R> }) => {
   return (async (...args: Parameters<L>) => {
     // define key based on args the function was invoked with
     const key = serialize({ args });
@@ -32,17 +32,8 @@ export const withSimpleCaching = <R extends any, L extends (...args: any[]) => R
     // if we dont, then grab the result of the logic
     const valueOrPromise = logic(...args);
 
-    // if the result of the logic was a promise, then return a promise which cache's the result after the promise resolves; // NOTE: we only do this if the result was a promise so we only make the function async if the logic was already async
-    if (isAPromise(valueOrPromise)) {
-      return valueOrPromise.then((value) => {
-        cache.set(key, value);
-        return value;
-      });
-    }
-
-    // since the result of the logic was not a promise, then cache the value and return it immediately
-    const value = valueOrPromise;
-    cache.set(key, value);
-    return value;
+    // cache the value and return it
+    cache.set(key, valueOrPromise);
+    return valueOrPromise;
   }) as L;
 };
