@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.3.1](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.3.0...v0.3.1) (2022-10-06)
+
+
+### Bug Fixes
+
+* **docs:** update readme example of custom serialize and deserialize ([a38d1d4](https://www.github.com/ehmpathy/with-simple-caching/commit/a38d1d4419dbd02ae7ee6e5a31bfe860ff179cc7))
+
 ## [0.3.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.2.1...v0.3.0) (2022-10-06)
 
 
