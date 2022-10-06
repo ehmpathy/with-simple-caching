@@ -93,10 +93,10 @@ const getRecipesFromApiWithLocalStorageCaching = withSimpleCaching(getRecipesFro
   // just define how a cache can `get` from and `set` to this data store
   cache: createCache({ directory: { s3: { bucket: '__bucket__', prefix: '__prefix__' } } }),
   serialize: {
-    value: (response) => JSON.stringify(response),
+    value: async (response) => JSON.stringify(await response),
   },
   deserialize: {
-    value: (cached) => JSON.parse(response)
+    value: async (cached) => JSON.parse(await cached)
   }
 });
 ```
