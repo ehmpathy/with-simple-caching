@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.2.1](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.2.0...v0.2.1) (2022-10-06)
+
+
+### Bug Fixes
+
+* **promises:** handle case where the cache get method is async ([45987fe](https://www.github.com/ehmpathy/with-simple-caching/commit/45987fee32d1233dd4d9da01386b5bb6be2ca7f4))
+
 ## [0.2.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.1.3...v0.2.0) (2022-10-06)
 
 
