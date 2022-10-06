@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.2.1...v0.3.0) (2022-10-06)
+
+
+### Features
+
+* **serde:** enable custom serialization and deserialization of cached value ([0065891](https://www.github.com/ehmpathy/with-simple-caching/commit/00658914abadc1172a285c17e31ac66427f91fe6))
+
 ### [0.2.1](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.2.0...v0.2.1) (2022-10-06)
 
 
