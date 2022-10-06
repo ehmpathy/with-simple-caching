@@ -5,6 +5,8 @@ export interface SimpleCache<T> {
   set: (key: string, value: T) => void;
 }
 
+export type KeySerializationMethod<P> = (args: P) => string;
+
 /**
  * caches the promise of each invocation, based on serialization of the inputs.
  *
@@ -19,10 +21,18 @@ export interface SimpleCache<T> {
  * expect(await result1).toBe(await result2); // same exact object - the result of the promise
  * ```
  */
-export const withSimpleCaching = <R extends any, L extends (...args: any[]) => R>(logic: L, { cache }: { cache: SimpleCache<R> }) => {
-  return (async (...args: Parameters<L>) => {
+export const withSimpleCaching = <R extends any, L extends (...args: any[]) => R>(
+  logic: L,
+  {
+    cache,
+    serialize: { key: keySerializer } = {
+      key: JSON.stringify, // default to json stringify
+    },
+  }: { cache: SimpleCache<R>; serialize?: { key: KeySerializationMethod<Parameters<L>> } },
+) => {
+  return ((...args: Parameters<L>) => {
     // define key based on args the function was invoked with
-    const key = serialize({ args });
+    const key = keySerializer(args);
 
     // see if we already have this result cached
     const cached = cache.get(key);

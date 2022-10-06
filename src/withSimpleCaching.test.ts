@@ -87,4 +87,35 @@ describe('withSimpleCaching', () => {
     // check that "api" was only called twice (once per name)
     expect(apiCalls.length).toEqual(2);
   });
+  it('should be possible to use a custom key serialization method', async () => {
+    // define an example fn
+    const apiCalls = [];
+    const callApi = withSimpleCaching(
+      ({ name }: { name: string }) => {
+        apiCalls.push(name);
+        return name;
+      },
+      {
+        cache: createCache(),
+        serialize: {
+          key: (args) => args[0].name.slice(0, 1), // serialize to only the first letter of the name arg
+        },
+      },
+    );
+
+    // call the fn a few times
+    const result1 = callApi({ name: 'casey' });
+    const result2 = callApi({ name: 'clarissa' });
+    const result3 = callApi({ name: 'chloe' });
+    const result4 = callApi({ name: 'charlotte' });
+
+    // check that the response is the same each time
+    expect(result1).toEqual('casey');
+    expect(result1).toEqual(result2);
+    expect(result2).toEqual(result3);
+    expect(result3).toEqual(result4);
+
+    // check that "api" was only called once
+    expect(apiCalls.length).toEqual(1);
+  });
 });
