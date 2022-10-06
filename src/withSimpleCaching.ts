@@ -1,4 +1,4 @@
-import { serialize } from './serialize';
+import { isAPromise } from './isAPromise';
 
 export interface SimpleCache<T> {
   get: (key: string) => T | undefined | Promise<Awaited<T> | undefined>;
@@ -34,15 +34,26 @@ export const withSimpleCaching = <R extends any, L extends (...args: any[]) => R
     // define key based on args the function was invoked with
     const key = keySerializer(args);
 
-    // see if we already have this result cached
-    const cached = cache.get(key);
-    if (cached) return cached; // return the value if its already cached
+    // start checking if its already cached
+    const cachedValueOrPromise = cache.get(key);
 
-    // if we dont, then grab the result of the logic
-    const valueOrPromise = logic(...args);
+    // define what to do with the value of this key in the cache
+    const onCachedResolved = ({ cached }: { cached: R | undefined }) => {
+      // return the value if its already cached
+      if (cached) return cached;
 
-    // cache the value and return it
-    cache.set(key, valueOrPromise);
-    return valueOrPromise;
+      // if we dont, then grab the result of the logic
+      const valueOrPromise = logic(...args);
+
+      // cache the value and return it
+      cache.set(key, valueOrPromise);
+      return valueOrPromise;
+    };
+
+    // respond to the knowledge of whether its cached or not
+    if (isAPromise(cachedValueOrPromise)) {
+      return cachedValueOrPromise.then((cached) => onCachedResolved({ cached })); // if its a promise, wait for it to resolve and then run onCachedResolved
+    }
+    return onCachedResolved({ cached: cachedValueOrPromise }); // otherwise, its already resolved, run onCachedResolved now
   }) as L;
 };

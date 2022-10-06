@@ -87,6 +87,41 @@ describe('withSimpleCaching', () => {
     // check that "api" was only called twice (once per name)
     expect(apiCalls.length).toEqual(2);
   });
+  it.only('should be possible to wait for the get promise to resolve before deciding whether to set or return', async () => {
+    // define an example cache that can only deal with strings or numbers
+    const store: Record<string, any> = {};
+    const cache = {
+      set: (key: string, value: Promise<string | number>) => {
+        store[key] = value;
+      },
+      get: async (key: string) => store[key],
+    };
+
+    // define an example fn
+    const apiCalls = [];
+    const callApi = withSimpleCaching(
+      async ({ name }: { name: string }) => {
+        apiCalls.push(name);
+        return Math.random();
+      },
+      {
+        cache,
+      },
+    );
+
+    // call the fn a few times
+    const result1 = await callApi({ name: 'casey' });
+    const result2 = await callApi({ name: 'katya' });
+    const result3 = await callApi({ name: 'casey' });
+    const result4 = await callApi({ name: 'katya' });
+
+    // check that the response is the same each time the input is the same
+    expect(result1).toEqual(result3);
+    expect(result2).toEqual(result4);
+
+    // check that "api" was only called twice (once per name)
+    expect(apiCalls.length).toEqual(2);
+  });
   it('should be possible to use a custom key serialization method', async () => {
     // define an example fn
     const apiCalls = [];
