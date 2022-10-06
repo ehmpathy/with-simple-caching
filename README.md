@@ -61,6 +61,47 @@ const getRecipesFromApiWithLocalStorageCaching = withSimpleCaching(getRecipesFro
 });
 ```
 
+
+### Use a custom key serialization method
+
+serialize the key as the sha hash of the args, for example
+
+```ts
+import { createCache } from 'simple-on-disk-cache';
+import { withSimpleCaching } from 'with-simple-caching';
+
+const getRecipesFromApiWithLocalStorageCaching = withSimpleCaching(getRecipesFromApi, {
+  // just define how a cache can `get` from and `set` to this data store
+  cache: createCache({ directory: { s3: { bucket: '__bucket__', prefix: '__prefix__' } } }),
+  serialize: {
+    key: (args) =>
+        crypto.createHash('sha256').update(JSON.stringify(args)).digest('hex'),
+  }
+});
+```
+
+
+### Use a custom value serialization and deserialization method
+
+if your cache requires you to store data as a string, you can define how to serialize and deserialize the response of your logic
+
+```ts
+import { createCache } from 'simple-on-disk-cache';
+import { withSimpleCaching } from 'with-simple-caching';
+
+const getRecipesFromApiWithLocalStorageCaching = withSimpleCaching(getRecipesFromApi, {
+  // just define how a cache can `get` from and `set` to this data store
+  cache: createCache({ directory: { s3: { bucket: '__bucket__', prefix: '__prefix__' } } }),
+  serialize: {
+    value: (response) => JSON.stringify(response),
+  },
+  deserialize: {
+    value: (cached) => JSON.parse(response)
+  }
+});
+```
+
+
 # Features
 
 ### Automatic cache key

@@ -7,6 +7,8 @@ export interface SimpleCache<T> {
 
 export type KeySerializationMethod<P> = (args: P) => string;
 
+const noOp = <LR, CR>(value: LR): CR => value as any;
+
 /**
  * caches the promise of each invocation, based on serialization of the inputs.
  *
@@ -21,38 +23,44 @@ export type KeySerializationMethod<P> = (args: P) => string;
  * expect(await result1).toBe(await result2); // same exact object - the result of the promise
  * ```
  */
-export const withSimpleCaching = <R extends any, L extends (...args: any[]) => R>(
+export const withSimpleCaching = <LR extends any, CR extends any, L extends (...args: any[]) => LR>(
   logic: L,
   {
     cache,
-    serialize: { key: keySerializer } = {
-      key: JSON.stringify, // default to json stringify
-    },
-  }: { cache: SimpleCache<R>; serialize?: { key: KeySerializationMethod<Parameters<L>> } },
-) => {
-  return ((...args: Parameters<L>) => {
+    serialize: {
+      key: serializeKey = JSON.stringify, // default serialize key to JSON.stringify
+      value: serializeValue = noOp, // default serialize value to noOp
+    } = {},
+    deserialize: { value: deserializeValue = noOp } = {},
+  }: {
+    cache: SimpleCache<CR>;
+    serialize?: { key?: KeySerializationMethod<Parameters<L>>; value?: (returned: LR) => CR };
+    deserialize?: { value?: (cached: CR) => LR };
+  },
+): L => {
+  return ((...args: Parameters<L>): LR => {
     // define key based on args the function was invoked with
-    const key = keySerializer(args);
+    const key = serializeKey(args);
 
     // start checking if its already cached
     const cachedValueOrPromise = cache.get(key);
 
     // define what to do with the value of this key in the cache
-    const onCachedResolved = ({ cached }: { cached: R | undefined }) => {
+    const onCachedResolved = ({ cached }: { cached: CR | undefined }): LR => {
       // return the value if its already cached
-      if (cached) return cached;
+      if (cached) return deserializeValue(cached);
 
       // if we dont, then grab the result of the logic
       const valueOrPromise = logic(...args);
 
       // cache the value and return it
-      cache.set(key, valueOrPromise);
+      cache.set(key, serializeValue(valueOrPromise));
       return valueOrPromise;
     };
 
     // respond to the knowledge of whether its cached or not
     if (isAPromise(cachedValueOrPromise)) {
-      return cachedValueOrPromise.then((cached) => onCachedResolved({ cached })); // if its a promise, wait for it to resolve and then run onCachedResolved
+      return cachedValueOrPromise.then((cached) => onCachedResolved({ cached })) as LR; // if its a promise, wait for it to resolve and then run onCachedResolved
     }
     return onCachedResolved({ cached: cachedValueOrPromise }); // otherwise, its already resolved, run onCachedResolved now
   }) as L;

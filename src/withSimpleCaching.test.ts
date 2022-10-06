@@ -87,7 +87,7 @@ describe('withSimpleCaching', () => {
     // check that "api" was only called twice (once per name)
     expect(apiCalls.length).toEqual(2);
   });
-  it.only('should be possible to wait for the get promise to resolve before deciding whether to set or return', async () => {
+  it('should be possible to wait for the get promise to resolve before deciding whether to set or return', async () => {
     // define an example cache that can only deal with strings or numbers
     const store: Record<string, any> = {};
     const cache = {
@@ -152,5 +152,44 @@ describe('withSimpleCaching', () => {
 
     // check that "api" was only called once
     expect(apiCalls.length).toEqual(1);
+  });
+  it('should be possible to use a custom value serialization and deserialization method', async () => {
+    // define an example fn
+    const apiCalls = [];
+    const store: Record<string, string> = {};
+    const callApi = withSimpleCaching(
+      ({ names }: { names: string[] }): string[] => {
+        apiCalls.push(names);
+        return names;
+      },
+      {
+        cache: {
+          get: (key: string) => store[key], // never returns a response, so everyone runs against "set"
+          set: (key: string, value: string) => {
+            if (typeof value !== 'string') throw new Error('value was not a string');
+            store[key] = value;
+          },
+        },
+        serialize: {
+          value: (returned) => JSON.stringify(returned),
+        },
+        deserialize: {
+          value: (cached) => JSON.parse(cached),
+        },
+      },
+    );
+
+    // call the fn a few times
+    const result1 = callApi({ names: ['casey'] });
+    const result2 = callApi({ names: ['chloe', 'charlotte'] });
+    const result3 = callApi({ names: ['casey'] });
+
+    // check that the response is the same each time
+    expect(result1).toEqual(['casey']);
+    expect(result1).toEqual(result3);
+    expect(result2).toEqual(['chloe', 'charlotte']);
+
+    // check that "api" was only called once
+    expect(apiCalls.length).toEqual(2);
   });
 });
