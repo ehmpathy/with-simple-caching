@@ -192,4 +192,40 @@ describe('withSimpleCaching', () => {
     // check that "api" was only called once
     expect(apiCalls.length).toEqual(2);
   });
+  it('should expose the error, if an error was returned by the function', async () => {
+    // define an example fn
+    const expectedError = new Error('surprise!');
+    const callApi = withSimpleCaching(
+      () => {
+        throw expectedError;
+      },
+      { cache: createCache() },
+    );
+
+    // call the fn and check that we can catch the error
+    try {
+      callApi();
+      throw new Error('should not reach here');
+    } catch (error) {
+      expect(error).toEqual(expectedError);
+    }
+  });
+  it('should expose the error, if an error was resolved by the promise returned by the function', async () => {
+    // define an example fn
+    const expectedError = new Error('surprise!');
+    const callApi = withSimpleCaching(
+      async () => {
+        throw expectedError;
+      },
+      { cache: createCache() },
+    );
+
+    // call the fn and check that we can catch the error
+    try {
+      await callApi();
+      throw new Error('should not reach here');
+    } catch (error) {
+      expect(error).toEqual(expectedError);
+    }
+  });
 });
