@@ -53,9 +53,14 @@ export const withSimpleCaching = <LR extends any, CR extends any, L extends (...
       // if we dont, then grab the result of the logic
       const valueOrPromise = logic(...args);
 
-      // cache the value and return it
-      cache.set(key, serializeValue(valueOrPromise));
-      return valueOrPromise;
+      // start setting the value into the cache
+      const confirmationOrPromise = cache.set(key, serializeValue(valueOrPromise));
+
+      // respond to the confirmation of it being set into the cache
+      if (isAPromise(confirmationOrPromise)) {
+        return confirmationOrPromise.then(() => valueOrPromise) as LR; // if the confirmation is a promise, wait for it to resolve and then return the value
+      }
+      return valueOrPromise; // otherwise, its already resolved, return the value
     };
 
     // respond to the knowledge of whether its cached or not
