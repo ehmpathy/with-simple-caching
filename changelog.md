@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.3.0...v0.4.0) (2022-11-20)
+
+
+### Features
+
+* **async-caches:** explicitly support caches with async setters ([5b3bc22](https://www.github.com/ehmpathy/with-simple-caching/commit/5b3bc226728ff0be117953a15dcb2a9e84ff2c18))
+
+
+### Bug Fixes
+
+* **docs:** update readme example of custom serialize and deserialize ([a38d1d4](https://www.github.com/ehmpathy/with-simple-caching/commit/a38d1d4419dbd02ae7ee6e5a31bfe860ff179cc7))
+* **tests:** add tests proving correct handing of errors ([0ad7f9b](https://www.github.com/ehmpathy/with-simple-caching/commit/0ad7f9b6fb6241933549361b17e401e58e6fcac5))
+
 ## [0.3.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.2.1...v0.3.0) (2022-10-06)
 
 
