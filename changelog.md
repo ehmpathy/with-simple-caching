@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.4.1...v0.5.0) (2022-11-22)
+
+
+### Features
+
+* **expiration:** enable using custom expiration policy per wrapper ([f4611dc](https://www.github.com/ehmpathy/with-simple-caching/commit/f4611dc4ad29f9f8941772a201d9500b0f537c0e))
+
 ### [0.4.1](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.4.0...v0.4.1) (2022-11-22)
 
 
