@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.4.1](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.4.0...v0.4.1) (2022-11-22)
+
+
+### Bug Fixes
+
+* **invalidation:** ensure null is treated as a valid cached value; only undefined as the invalidation literal ([4a2327c](https://www.github.com/ehmpathy/with-simple-caching/commit/4a2327c5cfb40093ecf121c04e9980501fc26ee7))
+
 ## [0.4.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.3.0...v0.4.0) (2022-11-20)
 
 
