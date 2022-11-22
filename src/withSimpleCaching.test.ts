@@ -311,4 +311,98 @@ describe('withSimpleCaching', () => {
       expect(apiCalls.length).toEqual(2);
     });
   });
+  describe('invalidation', () => {
+    it('should consider the cached value as invalid if value resolved as undefined', async () => {
+      // define an example fn
+      const apiCalls = [];
+      const callApi = withSimpleCaching(
+        () => {
+          apiCalls.push(1);
+          return undefined; // return undefined each time
+        },
+        { cache: createCache() },
+      );
+
+      // call the fn a few times
+      const result1 = callApi();
+      const result2 = callApi();
+      const result3 = callApi();
+
+      // check that undefined was returned each time
+      expect(result1).toEqual(undefined);
+      expect(result2).toEqual(undefined);
+      expect(result3).toEqual(undefined);
+
+      // check that "api" was called each time, since it was not a valid cache value that was "set" each time
+      expect(apiCalls.length).toEqual(3);
+    });
+    it('should support cache invalidation by calling the cache again if cache value was set to undefined externally', async () => {
+      // define an example cache that can only deal with strings or numbers
+      const store: Record<string, any> = {};
+      const cache = {
+        set: (key: string, value: Promise<string | number>) => {
+          store[key] = value;
+        },
+        get: (key: string) => store[key],
+      };
+
+      // define an example fn
+      const apiCalls = [];
+      const callApi = withSimpleCaching(
+        () => {
+          apiCalls.push(1);
+          return Math.random();
+        },
+        { cache },
+      );
+
+      // call the fn a few times
+      const result1 = callApi();
+      const result2 = callApi();
+      const result3 = callApi();
+
+      // check that the response is the same each time
+      expect(result1).toEqual(result2);
+      expect(result2).toEqual(result3);
+
+      // check that "api" was only called once
+      expect(apiCalls.length).toEqual(1);
+
+      // now set the value to undefined
+      expect(store['[]']).toBeDefined(); // sanity check that we've defined the key correctly
+      store['[]'] = undefined; // invalidate the key written to above
+
+      // now call the api again
+      const result4 = callApi();
+
+      // now we expect the value to be different
+      expect(result4).not.toEqual(result1);
+
+      // and we expect the api to have been called again
+      expect(apiCalls.length).toEqual(2);
+    });
+    it('should treat null as a valid cached value', async () => {
+      // define an example fn
+      const apiCalls = [];
+      const callApi = withSimpleCaching(
+        () => {
+          apiCalls.push(1);
+          return null; // return null each time
+        },
+        { cache: createCache() },
+      );
+
+      // call the fn a few times
+      const result1 = callApi();
+      const result2 = callApi();
+      const result3 = callApi();
+
+      // check that the response is the same each time
+      expect(result1).toEqual(result2);
+      expect(result2).toEqual(result3);
+
+      // check that "api" was only called once
+      expect(apiCalls.length).toEqual(1);
+    });
+  });
 });

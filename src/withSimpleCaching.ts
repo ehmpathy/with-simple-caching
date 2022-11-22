@@ -48,7 +48,7 @@ export const withSimpleCaching = <LR extends any, CR extends any, L extends (...
     // define what to do with the value of this key in the cache
     const onCachedResolved = ({ cached }: { cached: CR | undefined }): LR => {
       // return the value if its already cached
-      if (cached) return deserializeValue(cached);
+      if (cached !== undefined) return deserializeValue(cached);
 
       // if we dont, then grab the result of the logic
       const valueOrPromise = logic(...args);
