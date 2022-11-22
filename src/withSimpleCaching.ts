@@ -2,7 +2,7 @@ import { isAPromise } from './isAPromise';
 
 export interface SimpleCache<T> {
   get: (key: string) => T | undefined | Promise<Awaited<T> | undefined>;
-  set: (key: string, value: T) => void;
+  set: (key: string, value: T, options?: { secondsUntilExpiration?: number }) => void | Promise<void>;
 }
 
 export type KeySerializationMethod<P> = (args: P) => string;
@@ -32,10 +32,12 @@ export const withSimpleCaching = <LR extends any, CR extends any, L extends (...
       value: serializeValue = noOp, // default serialize value to noOp
     } = {},
     deserialize: { value: deserializeValue = noOp } = {},
+    secondsUntilExpiration,
   }: {
     cache: SimpleCache<CR>;
     serialize?: { key?: KeySerializationMethod<Parameters<L>>; value?: (returned: LR) => CR };
     deserialize?: { value?: (cached: CR) => LR };
+    secondsUntilExpiration?: number;
   },
 ): L => {
   return ((...args: Parameters<L>): LR => {
@@ -54,7 +56,7 @@ export const withSimpleCaching = <LR extends any, CR extends any, L extends (...
       const valueOrPromise = logic(...args);
 
       // start setting the value into the cache
-      const confirmationOrPromise = cache.set(key, serializeValue(valueOrPromise));
+      const confirmationOrPromise = cache.set(key, serializeValue(valueOrPromise), { secondsUntilExpiration });
 
       // respond to the confirmation of it being set into the cache
       if (isAPromise(confirmationOrPromise)) {

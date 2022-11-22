@@ -405,4 +405,48 @@ describe('withSimpleCaching', () => {
       expect(apiCalls.length).toEqual(1);
     });
   });
+  describe('expiration', () => {
+    it('should apply the secondsUntilExpiration option correctly', async () => {
+      // define an example fn
+      const apiCalls = [];
+      const callApi = withSimpleCaching(
+        () => {
+          apiCalls.push(1);
+          return Math.random();
+        },
+        {
+          cache: createCache(),
+          secondsUntilExpiration: 3, // wait three seconds until expiration
+        },
+      );
+
+      // call the fn a few times
+      const result1 = callApi();
+      const result2 = callApi();
+      const result3 = callApi();
+
+      // check that the response is the same each time
+      expect(result1).toEqual(result2);
+      expect(result2).toEqual(result3);
+
+      // check that "api" was only called once
+      expect(apiCalls.length).toEqual(1);
+
+      // now wait 1 second
+      await sleep(1000);
+
+      // prove that calling the api still returns cached result
+      const result4 = callApi();
+      expect(result4).toEqual(result1);
+      expect(apiCalls.length).toEqual(1);
+
+      // now wait 2 more seconds, exceeding the expiration time since first call
+      await sleep(2000);
+
+      // and prove that a call now would actually hit the api
+      const result5 = callApi();
+      expect(result5).not.toEqual(result1);
+      expect(apiCalls.length).toEqual(2);
+    });
+  });
 });
