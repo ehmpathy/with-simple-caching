@@ -24,11 +24,27 @@ export const getCacheFromCacheOption = <L extends (...args: any[]) => any, CR ex
   return cacheOption;
 };
 
-export interface WithSimpleCachingOptions<LR extends any, CR extends any, L extends (...args: any[]) => LR> {
+export interface WithSimpleCachingOptions<
+  /**
+   * the response returned by the wrapped logic for the input
+   */
+  LR extends any,
+  /**
+   * the response returned by the cache for the key
+   */
+  CR extends any,
+  /**
+   * the logic we are caching the responses for
+   */
+  L extends (...args: any[]) => LR
+> {
   cache: SimpleCache<CR> | SimpleCacheResolutionMethod<L, CR>;
   serialize?: { key?: KeySerializationMethod<Parameters<L>>; value?: (returned: LR) => CR };
   deserialize?: { value?: (cached: CR) => LR };
   secondsUntilExpiration?: number;
+  hook?: {
+    onSet: (args: { forInput: Parameters<L>; forKey: string; value: { output: ReturnType<L>; cached: CR } }) => void;
+  };
 }
 
 /**
@@ -55,6 +71,7 @@ export const withSimpleCaching = <LR extends any, CR extends any, L extends (...
     } = {},
     deserialize: { value: deserializeValue = noOp } = {},
     secondsUntilExpiration,
+    hook,
   }: WithSimpleCachingOptions<LR, CR, L>,
 ): L => {
   return ((...args: Parameters<L>): LR => {
@@ -73,16 +90,36 @@ export const withSimpleCaching = <LR extends any, CR extends any, L extends (...
       if (cached !== undefined) return deserializeValue(cached);
 
       // if we dont, then grab the result of the logic
-      const valueOrPromise = logic(...args);
+      const valueOrPromise = logic(...args) as ReturnType<L>;
+
+      // define the serialized value
+      const serializedValue = serializeValue(valueOrPromise);
 
       // start setting the value into the cache
       const confirmationOrPromise = cache.set(key, serializeValue(valueOrPromise), { secondsUntilExpiration });
 
-      // respond to the confirmation of it being set into the cache
+      // define a function for how to trigger the onSet hook, if needed
+      const triggerOnSetHookIfNeeded = () => {
+        if (hook?.onSet)
+          // note: we do not wait for the hook to resolve; hooks do not block execution ℹ️
+          hook.onSet({
+            forInput: args,
+            forKey: key,
+            value: {
+              output: valueOrPromise,
+              cached: serializedValue,
+            },
+          });
+      };
+
+      // respond to the confirmation of it being set into the cache.
       if (isAPromise(confirmationOrPromise)) {
-        return confirmationOrPromise.then(() => valueOrPromise) as LR; // if the confirmation is a promise, wait for it to resolve and then return the value
+        return confirmationOrPromise // if it was a promise
+          .then(triggerOnSetHookIfNeeded) // trigger the onset hook if needed, after the setConfirmation promise resolves
+          .then(() => valueOrPromise) as LR; // and then return the result, after setConfirmation resolves and the onSet.hook is kicked off
       }
-      return valueOrPromise; // otherwise, its already resolved, return the value
+      triggerOnSetHookIfNeeded(); // otherwise, it is already resolved, kickoff the onset hook if needed
+      return valueOrPromise; // and return the value
     };
 
     // respond to the knowledge of whether its cached or not

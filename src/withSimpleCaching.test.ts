@@ -1,4 +1,5 @@
 import { createCache } from 'simple-in-memory-cache';
+import { WithSimpleCachingOptions } from '.';
 import { withSimpleCaching } from './withSimpleCaching';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -447,6 +448,172 @@ describe('withSimpleCaching', () => {
       const result5 = callApi();
       expect(result5).not.toEqual(result1);
       expect(apiCalls.length).toEqual(2);
+    });
+  });
+  describe('hooks', () => {
+    it('should trigger an onSet hook after setting - synchronous logic, synchronous cache', () => {
+      // define an example fn
+      const apiCalls = [];
+      const onSetCalls: any[] = [];
+      const callApi = withSimpleCaching(
+        ({ galaxy }: { galaxy: string }) => {
+          apiCalls.push(galaxy);
+          return Math.random();
+        },
+        {
+          cache: createCache(),
+          hook: { onSet: (args) => onSetCalls.push(args) }, // just save the args that onSet gives us, so we can evaluate them in the test
+        },
+      );
+
+      // call the fn a few times
+      const result1 = callApi({ galaxy: 'andromeda' });
+      const result2 = callApi({ galaxy: 'pegasus' });
+      const result3 = callApi({ galaxy: 'andromeda' });
+      const result4 = callApi({ galaxy: 'pegasus' });
+
+      // check that the response is the same each time the input is the same
+      expect(result1).toEqual(result3);
+      expect(result2).toEqual(result4);
+
+      // check that "api" was only called twice
+      expect(apiCalls.length).toEqual(2);
+
+      // check that "onSet" was only called twice, since we should have only set a value twice
+      expect(onSetCalls.length).toEqual(2);
+
+      // check that onSet looks correct for the first request
+      expect(onSetCalls[0]).toEqual({
+        forInput: [{ galaxy: 'andromeda' }],
+        forKey: JSON.stringify([{ galaxy: 'andromeda' }]),
+        value: {
+          output: expect.any(Number),
+          cached: expect.any(Number),
+        },
+      });
+
+      // check that onSet looks correct for the second request
+      expect(onSetCalls[1]).toEqual({
+        forInput: [{ galaxy: 'pegasus' }],
+        forKey: JSON.stringify([{ galaxy: 'pegasus' }]),
+        value: {
+          output: expect.any(Number),
+          cached: expect.any(Number),
+        },
+      });
+    });
+    it('should trigger an onSet hook after setting - asynchronous logic, synchronous cache', async () => {
+      // define an example fn
+      const apiCalls = [];
+      const onSetCalls: any[] = [];
+      const callApi = withSimpleCaching(
+        async ({ galaxy }: { galaxy: string }) => {
+          apiCalls.push(galaxy);
+          await sleep(1000);
+          return Math.random();
+        },
+        {
+          cache: createCache(),
+          hook: { onSet: (args) => onSetCalls.push(args) }, // just save the args that onSet gives us, so we can evaluate them in the test
+        },
+      );
+
+      // call the function, without resolving the promise yet
+      const result1Promise = callApi({ galaxy: 'andromeda' });
+
+      // prove that the onSet hook is already called, since onSet was called as the synchronous cache set the promise response without awaiting it
+      expect(onSetCalls.length).toEqual(1);
+
+      // now wait for the result promise to resolve
+      const result1 = await result1Promise;
+
+      // now prove that onSet was not called again
+      expect(onSetCalls.length).toEqual(1);
+
+      // call the fn a few more times
+      const result2 = await callApi({ galaxy: 'pegasus' });
+      const result3 = await callApi({ galaxy: 'andromeda' });
+      const result4 = await callApi({ galaxy: 'pegasus' });
+
+      // check that the response is the same each time the input is the same
+      expect(result1).toEqual(result3);
+      expect(result2).toEqual(result4);
+
+      // check that "api" was only called twice (once per galaxy)
+      expect(apiCalls.length).toEqual(2);
+
+      // now prove that the type of the value given to the 'onSet' was also a promise (since that is what was set into the cache and that is what was returned by the wrapper)
+      expect(onSetCalls[0]).toEqual({
+        forInput: [{ galaxy: 'andromeda' }],
+        forKey: JSON.stringify([{ galaxy: 'andromeda' }]),
+        value: {
+          output: expect.any(Promise), // this was the exact output of the logic that was wrapped
+          cached: expect.any(Promise), // this whas the exact input given to the cache.set function
+        },
+      });
+    });
+    it('should trigger an onSet hook after setting - asynchronous logic, asynchronous cache', async () => {
+      // define an example cache that can only deal with numbers
+      const store: Record<string, any> = {};
+      const cache = {
+        set: async (key: string, value: Promise<number>) => {
+          store[key] = await value;
+        },
+        get: (key: string) => store[key],
+      };
+
+      // define an example fn
+      const apiCalls = [];
+      const onSetCalls: any[] = [];
+      const callApi = withSimpleCaching(
+        async ({ galaxy }: { galaxy: string }) => {
+          apiCalls.push(galaxy);
+          await sleep(1000);
+          return Math.random();
+        },
+        {
+          cache,
+          hook: { onSet: (args) => onSetCalls.push(args) }, // just save the args that onSet gives us, so we can evaluate them in the test
+        },
+      );
+
+      // call the function, without resolving the promise yet
+      const result1Promise = callApi({ galaxy: 'andromeda' });
+
+      // prove that the onSet hook is not yet called, because the asynchronous cache has not gotten the value to set yet
+      expect(onSetCalls.length).toEqual(0);
+
+      // now wait for the result promise to resolve
+      const result1 = await result1Promise;
+
+      // now prove that onSet was called
+      expect(onSetCalls.length).toEqual(1);
+
+      // call the fn a few more times
+      const result2 = await callApi({ galaxy: 'pegasus' });
+      const result3 = await callApi({ galaxy: 'andromeda' });
+      const result4 = await callApi({ galaxy: 'pegasus' });
+
+      // check that the response is the same each time the input is the same
+      expect(result1).toEqual(result3);
+      expect(result2).toEqual(result4);
+
+      // check that "api" was only called twice (once per galaxy)
+      expect(apiCalls.length).toEqual(2);
+
+      // check that the value in the cache is not the promise, but the value itself
+      expect(typeof Promise.resolve(821)).toEqual('object'); // prove that a promise to resolve a number has a typeof object
+      expect(typeof cache.get(JSON.stringify([{ galaxy: 'andromeda' }]))).toEqual('number'); // now prove that the value saved into the cache for this name is definetly not a promise
+
+      // now prove that the type of the value given to the 'onSet' was still a promise (since that is the output of the function + that is what was given to set to the cache)
+      expect(onSetCalls[0]).toEqual({
+        forInput: [{ galaxy: 'andromeda' }],
+        forKey: JSON.stringify([{ galaxy: 'andromeda' }]),
+        value: {
+          output: expect.any(Promise), // this was the exact output of the logic that was wrapped
+          cached: expect.any(Promise), // this whas the exact input given to the cache.set function
+        },
+      });
     });
   });
 });
