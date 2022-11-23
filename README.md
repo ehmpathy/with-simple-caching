@@ -1,7 +1,7 @@
 # with-simple-caching
 
-![ci_on_commit](https://github.com/uladkasach/with-simple-caching/workflows/ci_on_commit/badge.svg)
-![deploy_on_tag](https://github.com/uladkasach/with-simple-caching/workflows/deploy_on_tag/badge.svg)
+![ci_on_commit](https://github.com/ehmpathy/with-simple-caching/workflows/ci_on_commit/badge.svg)
+![deploy_on_tag](https://github.com/ehmpathy/with-simple-caching/workflows/deploy_on_tag/badge.svg)
 
 A wrapper that makes it simple to add caching to any function.
 
