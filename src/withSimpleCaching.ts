@@ -1,3 +1,4 @@
+import { isAFunction } from './isAFunction';
 import { isAPromise } from './isAPromise';
 
 export interface SimpleCache<T> {
@@ -7,7 +8,21 @@ export interface SimpleCache<T> {
 
 export type KeySerializationMethod<P> = (args: P) => string;
 
-const noOp = <LR, CR>(value: LR): CR => value as any;
+export const noOp = <LR, CR>(value: LR): CR => value as any;
+export const defaultKeySerializationMethod = JSON.stringify;
+export const defaultValueSerializationMethod = noOp;
+
+export type CacheResolutionMethod<L extends (...args: any[]) => any, CR extends any> = (...args: Parameters<L>) => SimpleCache<CR>;
+export const getCacheFromCacheOption = <L extends (...args: any[]) => any, CR extends any>({
+  forInput,
+  cacheOption,
+}: {
+  forInput: Parameters<L>;
+  cacheOption: SimpleCache<CR> | CacheResolutionMethod<L, CR>;
+}) => {
+  if (isAFunction(cacheOption)) return cacheOption(...forInput);
+  return cacheOption;
+};
 
 /**
  * caches the promise of each invocation, based on serialization of the inputs.
@@ -26,15 +41,15 @@ const noOp = <LR, CR>(value: LR): CR => value as any;
 export const withSimpleCaching = <LR extends any, CR extends any, L extends (...args: any[]) => LR>(
   logic: L,
   {
-    cache,
+    cache: cacheOption,
     serialize: {
-      key: serializeKey = JSON.stringify, // default serialize key to JSON.stringify
-      value: serializeValue = noOp, // default serialize value to noOp
+      key: serializeKey = defaultKeySerializationMethod, // default serialize key to JSON.stringify
+      value: serializeValue = defaultValueSerializationMethod, // default serialize value to noOp
     } = {},
     deserialize: { value: deserializeValue = noOp } = {},
     secondsUntilExpiration,
   }: {
-    cache: SimpleCache<CR>;
+    cache: SimpleCache<CR> | CacheResolutionMethod<L, CR>;
     serialize?: { key?: KeySerializationMethod<Parameters<L>>; value?: (returned: LR) => CR };
     deserialize?: { value?: (cached: CR) => LR };
     secondsUntilExpiration?: number;
@@ -43,6 +58,9 @@ export const withSimpleCaching = <LR extends any, CR extends any, L extends (...
   return ((...args: Parameters<L>): LR => {
     // define key based on args the function was invoked with
     const key = serializeKey(args);
+
+    // define cache based on options
+    const cache = getCacheFromCacheOption({ forInput: args, cacheOption });
 
     // start checking if its already cached
     const cachedValueOrPromise = cache.get(key);

@@ -1,1 +1,2 @@
-export { withSimpleCaching, SimpleCache } from './withSimpleCaching';
+export { withSimpleCaching, SimpleCache, KeySerializationMethod } from './withSimpleCaching';
+export { withExtendableCaching } from './withExtendableCaching';

@@ -1,1 +1,1 @@
-export const isAPromise = (obj: any): obj is Promise<any> => Promise.resolve(obj) === obj;
+export const isAPromise = <T extends any = any>(obj: any): obj is Promise<T> => Promise.resolve(obj) === obj;

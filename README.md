@@ -101,6 +101,28 @@ const getRecipesFromApiWithLocalStorageCaching = withSimpleCaching(getRecipesFro
 });
 ```
 
+### Define the cache at runtime from function inputs
+
+if your cache is defined as part of the inputs to your function (e.g., if you're using the input context pattern), you define where to find the cache in the inputs
+
+for example
+```ts
+import { createCache, SimpleInMemoryCache } from 'simple-in-memory-cache';
+import { withSimpleCaching } from 'with-simple-caching';
+
+const getBookByName = withSimpleCaching(
+  async ({ name: string}, context: { cache: SimpleInMemoryCache<Book> }) => {
+    /* ... get the book ... */
+    return book;
+  },
+  {
+    cache: (_, context) => context.cache, // grab the cache from the "context" parameter
+  },
+);
+
+const book = await getBookByName({ name: 'Hitchhikers Guide to the Galaxy' }, { cache: createCache() });
+```
+
 
 # Features
 
