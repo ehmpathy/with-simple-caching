@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.7.2...v0.8.0) (2022-11-23)
+
+
+### Features
+
+* **hooks:** allow users to specify an onSet hook, which gets triggered exactly after set is confirmed ([be77bf6](https://www.github.com/ehmpathy/with-simple-caching/commit/be77bf62c2bb6a0a39cf2562b87e3869c88693f1))
+
 ### [0.7.2](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.7.1...v0.7.2) (2022-11-23)
 
 
