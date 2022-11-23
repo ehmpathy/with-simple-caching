@@ -1,4 +1,4 @@
-import { withSimpleCaching } from '.';
+import { withSimpleCaching, WithSimpleCachingOnSetTrigger } from '.';
 import { isAFunction } from './isAFunction';
 import {
   defaultKeySerializationMethod,
@@ -68,6 +68,14 @@ export const withExtendableCaching = <LR extends any, CR extends any, L extends 
     const serializeKey = options.serialize?.key ?? defaultKeySerializationMethod;
     const cache = getCacheFromCacheOption({ forInput, cacheOption: options.cache });
     await cache.set(serializeKey(forInput), undefined as CR);
+    if (options.hook?.onSet)
+      // note: we do not wait for the hook to resolve; hooks do not block execution ℹ️
+      options.hook.onSet({
+        from: WithSimpleCachingOnSetTrigger.INVALIDATE,
+        forInput,
+        forKey: serializeKey(forInput),
+        value: undefined,
+      });
   };
 
   const update: LogicWithExtendableCaching<LR, CR, L>['update'] = async ({ forInput, toValue }) => {
@@ -76,6 +84,17 @@ export const withExtendableCaching = <LR extends any, CR extends any, L extends 
     const cache = getCacheFromCacheOption({ forInput, cacheOption: options.cache });
     const newValue = isAFunction(toValue) ? toValue({ cachedValue: await cache.get(serializeKey(forInput)) }) : toValue;
     await cache.set(serializeKey(forInput), serializeValue(newValue), { secondsUntilExpiration: options.secondsUntilExpiration });
+    if (options.hook?.onSet)
+      // note: we do not wait for the hook to resolve; hooks do not block execution ℹ️
+      options.hook.onSet({
+        from: WithSimpleCachingOnSetTrigger.UPDATE,
+        forInput,
+        forKey: serializeKey(forInput),
+        value: {
+          output: newValue,
+          cached: serializeValue(newValue),
+        },
+      });
   };
 
   return { execute, invalidate, update };
