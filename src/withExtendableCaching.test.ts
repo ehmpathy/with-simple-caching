@@ -98,7 +98,7 @@ describe('withExtendableCaching', () => {
 
       // check that onSet looks correct for the first request
       expect(onSetCalls[2]).toEqual({
-        from: WithSimpleCachingOnSetTrigger.INVALIDATE,
+        trigger: WithSimpleCachingOnSetTrigger.INVALIDATE,
         forInput: [{ galaxy: 'andromeda' }],
         forKey: JSON.stringify([{ galaxy: 'andromeda' }]),
         value: undefined,
@@ -180,7 +180,7 @@ describe('withExtendableCaching', () => {
 
       // check that onSet looks correct for the first request
       expect(onSetCalls[2]).toEqual({
-        from: WithSimpleCachingOnSetTrigger.UPDATE,
+        trigger: WithSimpleCachingOnSetTrigger.UPDATE,
         forInput: [{ galaxy: 'andromeda' }],
         forKey: JSON.stringify([{ galaxy: 'andromeda' }]),
         value: {

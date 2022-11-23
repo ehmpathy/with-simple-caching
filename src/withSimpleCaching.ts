@@ -58,7 +58,7 @@ export type SimpleCacheOnSetHook<LR extends any, CR extends any, L extends (...a
   /**
    * the method which triggered this onSet hook
    */
-  from: WithSimpleCachingOnSetTrigger;
+  trigger: WithSimpleCachingOnSetTrigger;
 
   /**
    * the input for which set was called
@@ -169,7 +169,7 @@ export const withSimpleCaching = <LR extends any, CR extends any, L extends (...
         if (hook?.onSet)
           // note: we do not wait for the hook to resolve; hooks do not block execution ℹ️
           hook.onSet({
-            from: WithSimpleCachingOnSetTrigger.EXECUTE,
+            trigger: WithSimpleCachingOnSetTrigger.EXECUTE,
             forInput: args,
             forKey: key,
             value: {

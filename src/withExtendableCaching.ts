@@ -71,7 +71,7 @@ export const withExtendableCaching = <LR extends any, CR extends any, L extends 
     if (options.hook?.onSet)
       // note: we do not wait for the hook to resolve; hooks do not block execution ℹ️
       options.hook.onSet({
-        from: WithSimpleCachingOnSetTrigger.INVALIDATE,
+        trigger: WithSimpleCachingOnSetTrigger.INVALIDATE,
         forInput,
         forKey: serializeKey(forInput),
         value: undefined,
@@ -87,7 +87,7 @@ export const withExtendableCaching = <LR extends any, CR extends any, L extends 
     if (options.hook?.onSet)
       // note: we do not wait for the hook to resolve; hooks do not block execution ℹ️
       options.hook.onSet({
-        from: WithSimpleCachingOnSetTrigger.UPDATE,
+        trigger: WithSimpleCachingOnSetTrigger.UPDATE,
         forInput,
         forKey: serializeKey(forInput),
         value: {

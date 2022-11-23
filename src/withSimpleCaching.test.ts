@@ -484,7 +484,7 @@ describe('withSimpleCaching', () => {
 
       // check that onSet looks correct for the first request
       expect(onSetCalls[0]).toEqual({
-        from: WithSimpleCachingOnSetTrigger.EXECUTE,
+        trigger: WithSimpleCachingOnSetTrigger.EXECUTE,
         forInput: [{ galaxy: 'andromeda' }],
         forKey: JSON.stringify([{ galaxy: 'andromeda' }]),
         value: {
@@ -495,7 +495,7 @@ describe('withSimpleCaching', () => {
 
       // check that onSet looks correct for the second request
       expect(onSetCalls[1]).toEqual({
-        from: WithSimpleCachingOnSetTrigger.EXECUTE,
+        trigger: WithSimpleCachingOnSetTrigger.EXECUTE,
         forInput: [{ galaxy: 'pegasus' }],
         forKey: JSON.stringify([{ galaxy: 'pegasus' }]),
         value: {
@@ -546,7 +546,7 @@ describe('withSimpleCaching', () => {
 
       // now prove that the type of the value given to the 'onSet' was also a promise (since that is what was set into the cache and that is what was returned by the wrapper)
       expect(onSetCalls[0]).toEqual({
-        from: WithSimpleCachingOnSetTrigger.EXECUTE,
+        trigger: WithSimpleCachingOnSetTrigger.EXECUTE,
         forInput: [{ galaxy: 'andromeda' }],
         forKey: JSON.stringify([{ galaxy: 'andromeda' }]),
         value: {
@@ -610,7 +610,7 @@ describe('withSimpleCaching', () => {
 
       // now prove that the type of the value given to the 'onSet' was still a promise (since that is the output of the function + that is what was given to set to the cache)
       expect(onSetCalls[0]).toEqual({
-        from: WithSimpleCachingOnSetTrigger.EXECUTE,
+        trigger: WithSimpleCachingOnSetTrigger.EXECUTE,
         forInput: [{ galaxy: 'andromeda' }],
         forKey: JSON.stringify([{ galaxy: 'andromeda' }]),
         value: {
