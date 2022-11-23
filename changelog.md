@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.8.2](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.8.1...v0.8.2) (2022-11-23)
+
+
+### Bug Fixes
+
+* **types:** update the name of the onset hooks trigger arg ([45139c4](https://www.github.com/ehmpathy/with-simple-caching/commit/45139c4e67d17defbbd5e3e0e09d693777b7a7cb))
+
 ### [0.8.1](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.8.0...v0.8.1) (2022-11-23)
 
 
