@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.8.2...v0.9.0) (2022-11-23)
+
+
+### Features
+
+* **extendability:** enable invalidation and update of extendable cache forKey, not just forInput ([fa25170](https://www.github.com/ehmpathy/with-simple-caching/commit/fa25170f31e24174d955f97a6653a742c0ff7b7c))
+
 ### [0.8.2](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.8.1...v0.8.2) (2022-11-23)
 
 
