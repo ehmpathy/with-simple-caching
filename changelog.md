@@ -1,5 +1,13 @@
 # Changelog
 
+### [0.7.1](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.7.0...v0.7.1) (2022-11-23)
+
+
+### Bug Fixes
+
+* **tests:** ensure that expiration time test has delay buffer for reliability ([940cf03](https://www.github.com/ehmpathy/with-simple-caching/commit/940cf0343af6f0098e6d1935d2583b7e45643fd2))
+* **types:** generalize WithSimpleCachingOptions and expose from package for extensibility ([bfa77a3](https://www.github.com/ehmpathy/with-simple-caching/commit/bfa77a3e2a0dfa3bdf5cc86c922810750b8c832e))
+
 ## [0.7.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.6.0...v0.7.0) (2022-11-23)
 
 
