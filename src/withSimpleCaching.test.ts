@@ -252,7 +252,7 @@ describe('withSimpleCaching', () => {
         {
           cache: createCache(),
           serialize: {
-            key: (args) => args[0].name.slice(0, 1), // serialize to only the first letter of the name arg
+            key: ({ forInput }) => forInput[0].name.slice(0, 1), // serialize to only the first letter of the name arg
           },
         },
       );

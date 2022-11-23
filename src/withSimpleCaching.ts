@@ -6,10 +6,10 @@ export interface SimpleCache<T> {
   set: (key: string, value: T, options?: { secondsUntilExpiration?: number }) => void | Promise<void>;
 }
 
-export type KeySerializationMethod<P> = (args: P) => string;
+export type KeySerializationMethod<P> = (args: { forInput: P }) => string;
 
 export const noOp = <LR, CR>(value: LR): CR => value as any;
-export const defaultKeySerializationMethod = JSON.stringify;
+export const defaultKeySerializationMethod: KeySerializationMethod<any> = ({ forInput }) => JSON.stringify(forInput);
 export const defaultValueSerializationMethod = noOp;
 
 export type SimpleCacheResolutionMethod<L extends (...args: any[]) => any, CR extends any> = (args: { fromInput: Parameters<L> }) => SimpleCache<CR>;
@@ -62,12 +62,17 @@ export type SimpleCacheOnSetHook<LR extends any, CR extends any, L extends (...a
 
   /**
    * the input for which set was called
+   *
+   * note
+   * - this may be undefined if `invalidation` was called `forKey`, instead of `forInput`
    */
-  forInput: Parameters<L>;
+  forInput: Parameters<L> | undefined;
+
   /**
    * the cache key that the input was serialized into
    */
   forKey: string;
+
   /**
    * the value which was set to the cache, defined as either
    * - the value which was set to the cache + the output from which the cached value was serialized
@@ -142,7 +147,7 @@ export const withSimpleCaching = <LR extends any, CR extends any, L extends (...
 ): L => {
   return ((...args: Parameters<L>): LR => {
     // define key based on args the function was invoked with
-    const key = serializeKey(args);
+    const key = serializeKey({ forInput: args });
 
     // define cache based on options
     const cache = getCacheFromCacheOption({ forInput: args, cacheOption });
