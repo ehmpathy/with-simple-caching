@@ -440,8 +440,8 @@ describe('withSimpleCaching', () => {
       expect(result4).toEqual(result1);
       expect(apiCalls.length).toEqual(1);
 
-      // now wait 2 more seconds, exceeding the expiration time since first call
-      await sleep(2000);
+      // now wait 2.5 more seconds, exceeding the expiration time since first call
+      await sleep(2500);
 
       // and prove that a call now would actually hit the api
       const result5 = callApi();
