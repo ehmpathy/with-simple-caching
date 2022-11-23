@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.5.0...v0.6.0) (2022-11-23)
+
+
+### Features
+
+* **cache:** enable defining cache from logic input args at runtime ([f96a291](https://www.github.com/ehmpathy/with-simple-caching/commit/f96a29146843e4ac6f987167532777a1ee9b9c9a))
+
 ## [0.5.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.4.1...v0.5.0) (2022-11-22)
 
 
