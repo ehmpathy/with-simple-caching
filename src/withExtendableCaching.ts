@@ -1,11 +1,9 @@
 import { withSimpleCaching } from '.';
 import {
-  CacheResolutionMethod,
   defaultKeySerializationMethod,
   defaultValueSerializationMethod,
   getCacheFromCacheOption,
-  KeySerializationMethod,
-  SimpleCache,
+  WithSimpleCachingOptions,
 } from './withSimpleCaching';
 
 /**
@@ -22,12 +20,7 @@ import {
  */
 export const withExtendableCaching = <LR extends any, CR extends any, L extends (...args: any[]) => LR>(
   logic: L,
-  options: {
-    cache: SimpleCache<CR> | CacheResolutionMethod<L, CR>;
-    serialize?: { key?: KeySerializationMethod<Parameters<L>>; value?: (returned: LR) => CR };
-    deserialize?: { value?: (cached: CR) => LR };
-    secondsUntilExpiration?: number;
-  },
+  options: WithSimpleCachingOptions<LR, CR, L>,
 ) => {
   /**
    * execute the logic with caching

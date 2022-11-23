@@ -12,17 +12,24 @@ export const noOp = <LR, CR>(value: LR): CR => value as any;
 export const defaultKeySerializationMethod = JSON.stringify;
 export const defaultValueSerializationMethod = noOp;
 
-export type CacheResolutionMethod<L extends (...args: any[]) => any, CR extends any> = (...args: Parameters<L>) => SimpleCache<CR>;
+export type SimpleCacheResolutionMethod<L extends (...args: any[]) => any, CR extends any> = (...args: Parameters<L>) => SimpleCache<CR>;
 export const getCacheFromCacheOption = <L extends (...args: any[]) => any, CR extends any>({
   forInput,
   cacheOption,
 }: {
   forInput: Parameters<L>;
-  cacheOption: SimpleCache<CR> | CacheResolutionMethod<L, CR>;
+  cacheOption: SimpleCache<CR> | SimpleCacheResolutionMethod<L, CR>;
 }) => {
   if (isAFunction(cacheOption)) return cacheOption(...forInput);
   return cacheOption;
 };
+
+export interface WithSimpleCachingOptions<LR extends any, CR extends any, L extends (...args: any[]) => LR> {
+  cache: SimpleCache<CR> | SimpleCacheResolutionMethod<L, CR>;
+  serialize?: { key?: KeySerializationMethod<Parameters<L>>; value?: (returned: LR) => CR };
+  deserialize?: { value?: (cached: CR) => LR };
+  secondsUntilExpiration?: number;
+}
 
 /**
  * caches the promise of each invocation, based on serialization of the inputs.
@@ -48,12 +55,7 @@ export const withSimpleCaching = <LR extends any, CR extends any, L extends (...
     } = {},
     deserialize: { value: deserializeValue = noOp } = {},
     secondsUntilExpiration,
-  }: {
-    cache: SimpleCache<CR> | CacheResolutionMethod<L, CR>;
-    serialize?: { key?: KeySerializationMethod<Parameters<L>>; value?: (returned: LR) => CR };
-    deserialize?: { value?: (cached: CR) => LR };
-    secondsUntilExpiration?: number;
-  },
+  }: WithSimpleCachingOptions<LR, CR, L>,
 ): L => {
   return ((...args: Parameters<L>): LR => {
     // define key based on args the function was invoked with
