@@ -1,5 +1,14 @@
 # Changelog
 
+### [0.7.2](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.7.1...v0.7.2) (2022-11-23)
+
+
+### Bug Fixes
+
+* **references:** replace final references from uladkasach org to ehmpathy org ([e874165](https://www.github.com/ehmpathy/with-simple-caching/commit/e87416573c8562474254036aa15852eb727047a9))
+* **types:** expose an explicit type for the output of logic wrapped with extendable caching ([87446c0](https://www.github.com/ehmpathy/with-simple-caching/commit/87446c0fbf1696aaa54ec2c08811218888644946))
+* **types:** update the type of the cache resolution method for easier readability in implementation ([de4ce8d](https://www.github.com/ehmpathy/with-simple-caching/commit/de4ce8d833894e336ce4fd60cae87384a0fb42d4))
+
 ### [0.7.1](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.7.0...v0.7.1) (2022-11-23)
 
 
