@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.6.0...v0.7.0) (2022-11-23)
+
+
+### Features
+
+* **extend:** expose withExtendableCaching enabling easy external invalidation and update of the wrapped logic cache ([d86c628](https://www.github.com/ehmpathy/with-simple-caching/commit/d86c628ceaf0fe995faf692cae18f73295fda397))
+
 ## [0.6.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.5.0...v0.6.0) (2022-11-23)
 
 
