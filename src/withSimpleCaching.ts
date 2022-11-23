@@ -12,7 +12,7 @@ export const noOp = <LR, CR>(value: LR): CR => value as any;
 export const defaultKeySerializationMethod = JSON.stringify;
 export const defaultValueSerializationMethod = noOp;
 
-export type SimpleCacheResolutionMethod<L extends (...args: any[]) => any, CR extends any> = (...args: Parameters<L>) => SimpleCache<CR>;
+export type SimpleCacheResolutionMethod<L extends (...args: any[]) => any, CR extends any> = (args: { fromInput: Parameters<L> }) => SimpleCache<CR>;
 export const getCacheFromCacheOption = <L extends (...args: any[]) => any, CR extends any>({
   forInput,
   cacheOption,
@@ -20,7 +20,7 @@ export const getCacheFromCacheOption = <L extends (...args: any[]) => any, CR ex
   forInput: Parameters<L>;
   cacheOption: SimpleCache<CR> | SimpleCacheResolutionMethod<L, CR>;
 }) => {
-  if (isAFunction(cacheOption)) return cacheOption(...forInput);
+  if (isAFunction(cacheOption)) return cacheOption({ fromInput: forInput });
   return cacheOption;
 };
 

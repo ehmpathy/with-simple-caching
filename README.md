@@ -116,7 +116,7 @@ const getBookByName = withSimpleCaching(
     return book;
   },
   {
-    cache: (_, context) => context.cache, // grab the cache from the "context" parameter
+    cache: ({ fromInput }) => fromInput[1].context.cache, // grab the cache from the input's "context" parameter (the second input parameter)
   },
 );
 
