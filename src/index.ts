@@ -1,2 +1,2 @@
 export { withSimpleCaching, SimpleCache, KeySerializationMethod, SimpleCacheResolutionMethod, WithSimpleCachingOptions } from './withSimpleCaching';
-export { withExtendableCaching } from './withExtendableCaching';
+export { withExtendableCaching, LogicWithExtendableCaching } from './withExtendableCaching';
