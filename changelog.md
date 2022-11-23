@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.8.1](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.8.0...v0.8.1) (2022-11-23)
+
+
+### Bug Fixes
+
+* **hooks:** trigger onset hook from extended invalidate and update methods ([e9f4fe5](https://www.github.com/ehmpathy/with-simple-caching/commit/e9f4fe5f3d33889525c548b05674fcf912fd93b7))
+
 ## [0.8.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.7.2...v0.8.0) (2022-11-23)
 
 
