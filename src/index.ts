@@ -6,5 +6,8 @@ export {
   WithSimpleCachingOptions,
   WithSimpleCachingOnSetTrigger,
   SimpleCacheOnSetHook,
+  defaultKeySerializationMethod,
+  defaultValueSerializationMethod,
+  defaultValueDeserializationMethod,
 } from './withSimpleCaching';
 export { withExtendableCaching, LogicWithExtendableCaching } from './withExtendableCaching';
