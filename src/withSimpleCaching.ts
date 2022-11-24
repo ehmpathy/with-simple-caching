@@ -13,7 +13,9 @@ export const defaultKeySerializationMethod: KeySerializationMethod<any> = ({ for
 export const defaultValueSerializationMethod = noOp;
 export const defaultValueDeserializationMethod = noOp;
 
-export type SimpleCacheResolutionMethod<LI extends any[], CV extends any> = (args: { fromInput: LI }) => SimpleCache<CV>;
+export type SimpleCacheResolutionMethod<LI extends any[], CV extends any, C extends SimpleCache<CV> = SimpleCache<CV>> = (args: {
+  fromInput: LI;
+}) => C;
 export const getCacheFromCacheOption = <LI extends any[], CV extends any>({
   forInput,
   cacheOption,
