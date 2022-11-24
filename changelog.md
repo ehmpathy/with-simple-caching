@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.9.4](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.9.3...v0.9.4) (2022-11-24)
+
+
+### Bug Fixes
+
+* **types:** update SimpleCacheResolutionMethod to support extending the cache type ([3bd778f](https://www.github.com/ehmpathy/with-simple-caching/commit/3bd778fa81bf45c66904e09f6afa5adaa04c6bbd))
+
 ### [0.9.3](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.9.2...v0.9.3) (2022-11-24)
 
 
