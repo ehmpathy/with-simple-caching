@@ -1,4 +1,5 @@
 import { isAFunction, isAPromise } from 'type-fns';
+import { BadRequestError } from './errors/BadRequestError';
 
 export interface SimpleCache<T> {
   get: (key: string) => T | undefined | Promise<Awaited<T> | undefined>;
@@ -18,8 +19,12 @@ export const getCacheFromCacheOption = <LI extends any[], CV extends any>({
 }: {
   forInput: LI;
   cacheOption: SimpleCache<CV> | SimpleCacheResolutionMethod<LI, CV>;
-}) => {
-  if (isAFunction(cacheOption)) return cacheOption({ fromInput: forInput });
+}): SimpleCache<CV> => {
+  if (isAFunction(cacheOption)) {
+    const foundCache = cacheOption({ fromInput: forInput });
+    if (!foundCache) throw new BadRequestError('could not extract cache from input with cache resolution method', { forInput });
+    return foundCache;
+  }
   return cacheOption;
 };
 
