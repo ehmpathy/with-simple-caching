@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.9.1](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.9.0...v0.9.1) (2022-11-24)
+
+
+### Bug Fixes
+
+* **types:** add a generic for the logic input, for extendability ([bfd78c9](https://www.github.com/ehmpathy/with-simple-caching/commit/bfd78c9082fcb15b2d9e6bf85da16c364ed35de1))
+
 ## [0.9.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.8.2...v0.9.0) (2022-11-23)
 
 
