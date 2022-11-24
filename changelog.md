@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.9.2](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.9.1...v0.9.2) (2022-11-24)
+
+
+### Bug Fixes
+
+* **types:** simplify generics by removing extended input and output methods ([b492de1](https://www.github.com/ehmpathy/with-simple-caching/commit/b492de1625f5e8d5b0a18499ffe823d55696886c))
+
 ### [0.9.1](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.9.0...v0.9.1) (2022-11-24)
 
 
