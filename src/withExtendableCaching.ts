@@ -16,7 +16,24 @@ export const hasForInputProperty = (obj: any): obj is { forInput: any } => !!obj
 /**
  * the shape of logic that was wrapped with extendable caching
  */
-export interface LogicWithExtendableCaching<LR extends any, CR extends any, L extends (...args: any[]) => LR> {
+export interface LogicWithExtendableCaching<
+  /**
+   * the shape of the input to the logic
+   */
+  LI extends any[],
+  /**
+   * the shape of the output from the logic
+   */
+  LO extends any,
+  /**
+   * the shape of the value in the cache
+   */
+  CV extends any,
+  /**
+   * the logic we are caching the responses for
+   */
+  L extends (...args: LI) => LO
+> {
   /**
    * execute the logic with caching
    */
@@ -45,7 +62,7 @@ export interface LogicWithExtendableCaching<LR extends any, CR extends any, L ex
           /**
            * the cache to use, if the cache must be was defined from input parameters at runtime
            */
-          cache?: SimpleCache<CR>;
+          cache?: SimpleCache<CV>;
         },
   ) => Promise<void>;
 
@@ -67,7 +84,7 @@ export interface LogicWithExtendableCaching<LR extends any, CR extends any, L ex
           /**
            * update the cache to this value
            */
-          toValue: ReturnType<L> | ((args: { cachedValue: CR | undefined }) => ReturnType<L>);
+          toValue: ReturnType<L> | ((args: { cachedValue: CV | undefined }) => ReturnType<L>);
         }
       | {
           /**
@@ -78,12 +95,12 @@ export interface LogicWithExtendableCaching<LR extends any, CR extends any, L ex
           /**
            * update the cache to this value
            */
-          toValue: ReturnType<L> | ((args: { cachedValue: CR | undefined }) => ReturnType<L>);
+          toValue: ReturnType<L> | ((args: { cachedValue: CV | undefined }) => ReturnType<L>);
 
           /**
            * the cache to use, if the cache must be was defined from input parameters at runtime
            */
-          cache?: SimpleCache<CR>;
+          cache?: SimpleCache<CV>;
         },
   ) => Promise<void>;
 }
@@ -91,13 +108,30 @@ export interface LogicWithExtendableCaching<LR extends any, CR extends any, L ex
 /**
  * a function which is capable of grabbing the cache from arguments to the `invalidate` or `update` commands, supporting both the case when invoked with `forInput` and when invoked with `forKey`
  */
-export const getCacheFromCacheOptionOrFromForKeyArgs = <LR extends any, CR extends any, L extends (...args: any[]) => LR>({
+export const getCacheFromCacheOptionOrFromForKeyArgs = <
+  /**
+   * the shape of the input to the logic
+   */
+  LI extends any[],
+  /**
+   * the shape of the output from the logic
+   */
+  LO extends any,
+  /**
+   * the shape of the value in the cache
+   */
+  CV extends any,
+  /**
+   * the logic we are caching the responses for
+   */
+  L extends (...args: LI) => LO
+>({
   args,
   options,
   trigger,
 }: {
-  args: Parameters<LogicWithExtendableCaching<LR, CR, L>['invalidate']>[0] | Parameters<LogicWithExtendableCaching<LR, CR, L>['update']>[0];
-  options: WithSimpleCachingOptions<LR, CR, L>;
+  args: Parameters<LogicWithExtendableCaching<LI, LO, CV, L>['invalidate']>[0] | Parameters<LogicWithExtendableCaching<LI, LO, CV, L>['update']>[0];
+  options: WithSimpleCachingOptions<LI, LO, CV, L>;
   trigger: WithSimpleCachingOnSetTrigger;
 }) => {
   // if the args have the forInput property, then we can grab the cache like normal
@@ -127,13 +161,30 @@ export const getCacheFromCacheOptionOrFromForKeyArgs = <LR extends any, CR exten
  * - in order to define their own `invalidation` and `update` methods, without this function, the user would need to access these caching options per function elsewhere
  * - this function makes it easy to utilize and extend cache invalidation + update commands for the wrapped logic, by managing the references to the caching options on behalf of the user
  */
-export const withExtendableCaching = <LR extends any, CR extends any, L extends (...args: any[]) => LR>(
+export const withExtendableCaching = <
+  /**
+   * the shape of the input to the logic
+   */
+  LI extends any[],
+  /**
+   * the shape of the output from the logic
+   */
+  LO extends any,
+  /**
+   * the shape of the value in the cache
+   */
+  CV extends any,
+  /**
+   * the logic we are caching the responses for
+   */
+  L extends (...args: LI) => LO
+>(
   logic: L,
-  options: WithSimpleCachingOptions<LR, CR, L>,
-): LogicWithExtendableCaching<LR, CR, L> => {
-  const execute: LogicWithExtendableCaching<LR, CR, L>['execute'] = withSimpleCaching(logic, options);
+  options: WithSimpleCachingOptions<LI, LO, CV, L>,
+): LogicWithExtendableCaching<LI, LO, CV, L> => {
+  const execute: LogicWithExtendableCaching<LI, LO, CV, L>['execute'] = withSimpleCaching(logic, options);
 
-  const invalidate: LogicWithExtendableCaching<LR, CR, L>['invalidate'] = async (args) => {
+  const invalidate: LogicWithExtendableCaching<LI, LO, CV, L>['invalidate'] = async (args) => {
     // define how to get the cache, with support for `forKey` input instead of full input
     const cache = getCacheFromCacheOptionOrFromForKeyArgs({ args, options, trigger: WithSimpleCachingOnSetTrigger.INVALIDATE });
 
@@ -142,7 +193,7 @@ export const withExtendableCaching = <LR extends any, CR extends any, L extends 
     const key = hasForInputProperty(args) ? serializeKey({ forInput: args.forInput }) : args.forKey;
 
     // set undefined into the cache for this key, to invalidate the cached value
-    await cache.set(key, undefined as CR);
+    await cache.set(key, undefined as CV);
 
     // trigger the onSet hook, if needed
     if (options.hook?.onSet)
@@ -155,7 +206,7 @@ export const withExtendableCaching = <LR extends any, CR extends any, L extends 
       });
   };
 
-  const update: LogicWithExtendableCaching<LR, CR, L>['update'] = async (args) => {
+  const update: LogicWithExtendableCaching<LI, LO, CV, L>['update'] = async (args) => {
     // define how to get the cache, with support for `forKey` input instead of full input
     const cache = getCacheFromCacheOptionOrFromForKeyArgs({ args, options, trigger: WithSimpleCachingOnSetTrigger.UPDATE });
 
