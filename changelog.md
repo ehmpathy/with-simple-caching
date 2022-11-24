@@ -1,5 +1,13 @@
 # Changelog
 
+### [0.9.3](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.9.2...v0.9.3) (2022-11-24)
+
+
+### Bug Fixes
+
+* **exports:** expose default serde methods ([94f5dde](https://www.github.com/ehmpathy/with-simple-caching/commit/94f5dde87bb36d7d77845919b86b8ae0fc80f3fc))
+* **failfast:** failfast if could not find cache from cache resolution function from input args ([91d36e1](https://www.github.com/ehmpathy/with-simple-caching/commit/91d36e10b0d2316287e4cb8d218bfa8886f25ab2))
+
 ### [0.9.2](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.9.1...v0.9.2) (2022-11-24)
 
 
