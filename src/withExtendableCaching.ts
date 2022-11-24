@@ -1,6 +1,6 @@
+import { isAFunction } from 'type-fns';
 import { SimpleCache, withSimpleCaching, WithSimpleCachingOnSetTrigger } from '.';
 import { BadRequestError } from './errors/BadRequestError';
-import { isAFunction } from './isAFunction';
 import {
   defaultKeySerializationMethod,
   defaultValueSerializationMethod,
@@ -18,21 +18,13 @@ export const hasForInputProperty = (obj: any): obj is { forInput: any } => !!obj
  */
 export interface LogicWithExtendableCaching<
   /**
-   * the shape of the input to the logic
+   * the logic we are caching the responses for
    */
-  LI extends any[],
-  /**
-   * the shape of the output from the logic
-   */
-  LO extends any,
+  L extends (...args: any[]) => any,
   /**
    * the shape of the value in the cache
    */
-  CV extends any,
-  /**
-   * the logic we are caching the responses for
-   */
-  L extends (...args: LI) => LO
+  CV extends any
 > {
   /**
    * execute the logic with caching
@@ -110,30 +102,22 @@ export interface LogicWithExtendableCaching<
  */
 export const getCacheFromCacheOptionOrFromForKeyArgs = <
   /**
-   * the shape of the input to the logic
+   * the logic we are caching the responses for
    */
-  LI extends any[],
-  /**
-   * the shape of the output from the logic
-   */
-  LO extends any,
+  L extends (...args: any[]) => any,
   /**
    * the shape of the value in the cache
    */
-  CV extends any,
-  /**
-   * the logic we are caching the responses for
-   */
-  L extends (...args: LI) => LO
+  CV extends any
 >({
   args,
   options,
   trigger,
 }: {
-  args: Parameters<LogicWithExtendableCaching<LI, LO, CV, L>['invalidate']>[0] | Parameters<LogicWithExtendableCaching<LI, LO, CV, L>['update']>[0];
-  options: WithSimpleCachingOptions<LI, LO, CV, L>;
+  args: Parameters<LogicWithExtendableCaching<L, CV>['invalidate']>[0] | Parameters<LogicWithExtendableCaching<L, CV>['update']>[0];
+  options: WithSimpleCachingOptions<L, CV>;
   trigger: WithSimpleCachingOnSetTrigger;
-}) => {
+}): SimpleCache<CV> => {
   // if the args have the forInput property, then we can grab the cache like normal
   if (hasForInputProperty(args)) return getCacheFromCacheOption({ forInput: args.forInput, cacheOption: options.cache });
 
@@ -163,28 +147,20 @@ export const getCacheFromCacheOptionOrFromForKeyArgs = <
  */
 export const withExtendableCaching = <
   /**
-   * the shape of the input to the logic
+   * the logic we are caching the responses for
    */
-  LI extends any[],
-  /**
-   * the shape of the output from the logic
-   */
-  LO extends any,
+  L extends (...args: any[]) => any,
   /**
    * the shape of the value in the cache
    */
-  CV extends any,
-  /**
-   * the logic we are caching the responses for
-   */
-  L extends (...args: LI) => LO
+  CV extends any
 >(
   logic: L,
-  options: WithSimpleCachingOptions<LI, LO, CV, L>,
-): LogicWithExtendableCaching<LI, LO, CV, L> => {
-  const execute: LogicWithExtendableCaching<LI, LO, CV, L>['execute'] = withSimpleCaching(logic, options);
+  options: WithSimpleCachingOptions<L, CV>,
+): LogicWithExtendableCaching<L, CV> => {
+  const execute: LogicWithExtendableCaching<L, CV>['execute'] = withSimpleCaching(logic, options);
 
-  const invalidate: LogicWithExtendableCaching<LI, LO, CV, L>['invalidate'] = async (args) => {
+  const invalidate: LogicWithExtendableCaching<L, CV>['invalidate'] = async (args) => {
     // define how to get the cache, with support for `forKey` input instead of full input
     const cache = getCacheFromCacheOptionOrFromForKeyArgs({ args, options, trigger: WithSimpleCachingOnSetTrigger.INVALIDATE });
 
@@ -206,7 +182,7 @@ export const withExtendableCaching = <
       });
   };
 
-  const update: LogicWithExtendableCaching<LI, LO, CV, L>['update'] = async (args) => {
+  const update: LogicWithExtendableCaching<L, CV>['update'] = async (args) => {
     // define how to get the cache, with support for `forKey` input instead of full input
     const cache = getCacheFromCacheOptionOrFromForKeyArgs({ args, options, trigger: WithSimpleCachingOnSetTrigger.UPDATE });
 

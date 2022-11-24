@@ -1,12 +1,11 @@
-import { isAFunction } from './isAFunction';
-import { isAPromise } from './isAPromise';
+import { isAFunction, isAPromise } from 'type-fns';
 
 export interface SimpleCache<T> {
   get: (key: string) => T | undefined | Promise<Awaited<T> | undefined>;
   set: (key: string, value: T, options?: { secondsUntilExpiration?: number }) => void | Promise<void>;
 }
 
-export type KeySerializationMethod<P> = (args: { forInput: P }) => string;
+export type KeySerializationMethod<LI> = (args: { forInput: LI }) => string;
 
 export const noOp = <LO, CV>(value: LO): CV => value as any;
 export const defaultKeySerializationMethod: KeySerializationMethod<any> = ({ forInput }) => JSON.stringify(forInput);
@@ -56,21 +55,13 @@ export enum WithSimpleCachingOnSetTrigger {
  */
 export type SimpleCacheOnSetHook<
   /**
-   * the shape of the input to the logic
+   * the logic we are caching the responses for
    */
-  LI extends any[],
-  /**
-   * the shape of the output from the logic
-   */
-  LO extends any,
+  L extends (...args: any[]) => any,
   /**
    * the shape of the value in the cache
    */
-  CV extends any,
-  /**
-   * the logic we are caching the responses for
-   */
-  L extends (...args: LI) => LO
+  CV extends any
 > = (args: {
   /**
    * the method which triggered this onSet hook
@@ -114,28 +105,20 @@ export type SimpleCacheOnSetHook<
  */
 export interface WithSimpleCachingOptions<
   /**
-   * the shape of the input to the logic
+   * the logic we are caching the responses for
    */
-  LI extends any[],
-  /**
-   * the shape of the output from the logic
-   */
-  LO extends any,
+  L extends (...args: any[]) => any,
   /**
    * the shape of the value in the cache
    */
-  CV extends any,
-  /**
-   * the logic we are caching the responses for
-   */
-  L extends (...args: LI) => LO
+  CV extends any
 > {
-  cache: SimpleCache<CV> | SimpleCacheResolutionMethod<LI, CV>;
-  serialize?: { key?: KeySerializationMethod<LI>; value?: (returned: LO) => CV };
-  deserialize?: { value?: (cached: CV) => LO };
+  cache: SimpleCache<CV> | SimpleCacheResolutionMethod<Parameters<L>, CV>;
+  serialize?: { key?: KeySerializationMethod<Parameters<L>>; value?: (output: ReturnType<L>) => CV };
+  deserialize?: { value?: (cached: CV) => ReturnType<L> };
   secondsUntilExpiration?: number;
   hook?: {
-    onSet: SimpleCacheOnSetHook<LI, LO, CV, L>;
+    onSet: SimpleCacheOnSetHook<L, CV>;
   };
 }
 
@@ -155,21 +138,13 @@ export interface WithSimpleCachingOptions<
  */
 export const withSimpleCaching = <
   /**
-   * the shape of the input to the logic
+   * the logic we are caching the responses for
    */
-  LI extends any[],
-  /**
-   * the shape of the output from the logic
-   */
-  LO extends any,
+  L extends (...args: any[]) => any,
   /**
    * the shape of the value in the cache
    */
-  CV extends any,
-  /**
-   * the logic we are caching the responses for
-   */
-  L extends (...args: LI) => LO
+  CV extends any
 >(
   logic: L,
   {
@@ -181,9 +156,9 @@ export const withSimpleCaching = <
     deserialize: { value: deserializeValue = noOp } = {},
     secondsUntilExpiration,
     hook,
-  }: WithSimpleCachingOptions<LI, LO, CV, L>,
+  }: WithSimpleCachingOptions<L, CV>,
 ): L => {
-  return ((...args: Parameters<L>): LO => {
+  return ((...args: Parameters<L>): ReturnType<L> => {
     // define key based on args the function was invoked with
     const key = serializeKey({ forInput: args });
 
@@ -194,7 +169,7 @@ export const withSimpleCaching = <
     const cachedValueOrPromise = cache.get(key);
 
     // define what to do with the value of this key in the cache
-    const onCachedResolved = ({ cached }: { cached: CV | undefined }): LO => {
+    const onCachedResolved = ({ cached }: { cached: CV | undefined }): ReturnType<L> => {
       // return the value if its already cached
       if (cached !== undefined) return deserializeValue(cached);
 
@@ -226,7 +201,7 @@ export const withSimpleCaching = <
       if (isAPromise(confirmationOrPromise)) {
         return confirmationOrPromise // if it was a promise
           .then(triggerOnSetHookIfNeeded) // trigger the onset hook if needed, after the setConfirmation promise resolves
-          .then(() => valueOrPromise) as LO; // and then return the result, after setConfirmation resolves and the onSet.hook is kicked off
+          .then(() => valueOrPromise) as ReturnType<L>; // and then return the result, after setConfirmation resolves and the onSet.hook is kicked off
       }
       triggerOnSetHookIfNeeded(); // otherwise, it is already resolved, kickoff the onset hook if needed
       return valueOrPromise; // and return the value
@@ -234,7 +209,7 @@ export const withSimpleCaching = <
 
     // respond to the knowledge of whether its cached or not
     if (isAPromise(cachedValueOrPromise)) {
-      return cachedValueOrPromise.then((cached) => onCachedResolved({ cached })) as LO; // if its a promise, wait for it to resolve and then run onCachedResolved
+      return cachedValueOrPromise.then((cached) => onCachedResolved({ cached })) as ReturnType<L>; // if its a promise, wait for it to resolve and then run onCachedResolved
     }
     return onCachedResolved({ cached: cachedValueOrPromise }); // otherwise, its already resolved, run onCachedResolved now
   }) as L;
