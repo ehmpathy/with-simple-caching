@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.9.5](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.9.4...v0.9.5) (2022-11-25)
+
+
+### Bug Fixes
+
+* **update:** provide a deserialized cached output to the update toValue function for user ([3fe2522](https://www.github.com/ehmpathy/with-simple-caching/commit/3fe2522654bb96d7f7b5e9113c45edf1889f272e))
+
 ### [0.9.4](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.9.3...v0.9.4) (2022-11-24)
 
 
