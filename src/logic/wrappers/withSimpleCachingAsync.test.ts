@@ -163,6 +163,47 @@ describe('withSimpleCachingAsync', () => {
       // check that "api" was only called once
       expect(apiCalls.length).toEqual(2);
     });
+    it('should ensure cache-miss and cache-hit responses are equivalent in the cases of lossy serde', async () => {
+      // define an example fn
+      const apiCalls = [];
+      const store: Record<string, string> = {};
+      const callApi = withSimpleCachingAsync(
+        async ({ names }: { names: string[] }): Promise<string[]> => {
+          apiCalls.push(names);
+          return names;
+        },
+        {
+          cache: {
+            get: async (key: string) => store[key], // never returns a response, so everyone runs against "set"
+            set: async (key: string, value: string) => {
+              if (typeof value !== 'string') throw new Error('value was not a string');
+              store[key] = value;
+            },
+          },
+          serialize: {
+            value: (returned) => JSON.stringify(returned),
+          },
+          deserialize: {
+            value: () => ['balloon'], // it's possible that the users deserialization method looses data. we should make sure their cache-miss response is the same as cache-hit resposes, to fail fast in these situations
+          },
+        },
+      );
+
+      // call the fn a few times
+      const result1 = await callApi({ names: ['casey'] });
+      const result2 = await callApi({ names: ['chloe', 'charlotte'] });
+      const result3 = await callApi({ names: ['casey'] });
+      const result4 = await callApi({ names: ['chloe', 'charlotte'] });
+
+      // check that the response is the same each time
+      expect(result1).toEqual(['balloon']);
+      expect(result2).toEqual(result1);
+      expect(result3).toEqual(result2);
+      expect(result4).toEqual(result3);
+
+      // check that "api" was called both times
+      expect(apiCalls.length).toEqual(2);
+    });
   });
   describe('invalidation', () => {
     it('should consider the cached value as invalid if value resolved as undefined', async () => {
