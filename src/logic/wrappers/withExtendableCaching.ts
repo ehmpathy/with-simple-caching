@@ -1,13 +1,18 @@
 import { isAFunction } from 'type-fns';
-import { defaultValueDeserializationMethod, SimpleCache, withSimpleCaching } from '.';
-import { BadRequestError } from './errors/BadRequestError';
-import { WithSimpleCachingOnSetTrigger } from './SimpleCacheOnSetHook';
-import {
-  defaultKeySerializationMethod,
-  defaultValueSerializationMethod,
-  getCacheFromCacheOption,
-  WithSimpleCachingOptions,
-} from './withSimpleCaching';
+import { SimpleAsyncCache } from '../../domain/SimpleCache';
+import { BadRequestError } from '../../utils/errors/BadRequestError';
+import { getCacheFromCacheOption } from '../options/getCacheFromCacheOption';
+import { defaultKeySerializationMethod, defaultValueDeserializationMethod, defaultValueSerializationMethod } from '../serde/defaults';
+import { withSimpleCachingAsync, WithSimpleCachingAsyncOptions } from './withSimpleCachingAsync';
+
+/**
+ * enumerates the extendable methods which can trigger cache operations
+ */
+export enum WithExtendableCachingTrigger {
+  EXECUTE = 'EXECUTE',
+  INVALIDATE = 'INVALIDATE',
+  UPDATE = 'UPDATE',
+}
 
 /**
  * a simple typeguard which checks if an object has a property named `forInput`
@@ -25,7 +30,7 @@ export interface LogicWithExtendableCaching<
   /**
    * the type of cache being used
    */
-  C extends SimpleCache<any>
+  C extends SimpleAsyncCache<any>
 > {
   /**
    * execute the logic with caching
@@ -77,7 +82,9 @@ export interface LogicWithExtendableCaching<
           /**
            * update the cache to this value
            */
-          toValue: ReturnType<L> | ((args: { fromCachedOutput: ReturnType<L> | undefined }) => ReturnType<L>);
+          toValue:
+            | Awaited<ReturnType<L>>
+            | ((args: { fromCachedOutput: Awaited<ReturnType<L>> | undefined }) => ReturnType<L> | Awaited<ReturnType<L>>);
         }
       | {
           /**
@@ -88,7 +95,9 @@ export interface LogicWithExtendableCaching<
           /**
            * update the cache to this value
            */
-          toValue: ReturnType<L> | ((args: { fromCachedOutput: ReturnType<L> | undefined }) => ReturnType<L>);
+          toValue:
+            | Awaited<ReturnType<L>>
+            | ((args: { fromCachedOutput: Awaited<ReturnType<L>> | undefined }) => ReturnType<L> | Awaited<ReturnType<L>>);
 
           /**
            * the cache to use, if the cache must be was defined from input parameters at runtime
@@ -109,15 +118,15 @@ export const getCacheFromCacheOptionOrFromForKeyArgs = <
   /**
    * the type of cache being used
    */
-  C extends SimpleCache<any>
+  C extends SimpleAsyncCache<any>
 >({
   args,
   options,
   trigger,
 }: {
   args: Parameters<LogicWithExtendableCaching<L, C>['invalidate']>[0] | Parameters<LogicWithExtendableCaching<L, C>['update']>[0];
-  options: WithSimpleCachingOptions<L, C>;
-  trigger: WithSimpleCachingOnSetTrigger;
+  options: WithSimpleCachingAsyncOptions<L, C>;
+  trigger: WithExtendableCachingTrigger;
 }): C => {
   // if the args have the forInput property, then we can grab the cache like normal
   if (hasForInputProperty(args)) return getCacheFromCacheOption({ forInput: args.forInput, cacheOption: options.cache });
@@ -150,20 +159,20 @@ export const withExtendableCaching = <
   /**
    * the logic we are caching the responses for
    */
-  L extends (...args: any[]) => any,
+  L extends (...args: any[]) => Promise<any>,
   /**
    * the type of cache being used
    */
-  C extends SimpleCache<any>
+  C extends SimpleAsyncCache<any>
 >(
   logic: L,
-  options: WithSimpleCachingOptions<L, C>,
+  options: WithSimpleCachingAsyncOptions<L, C>,
 ): LogicWithExtendableCaching<L, C> => {
-  const execute: LogicWithExtendableCaching<L, C>['execute'] = withSimpleCaching(logic, options);
+  const execute: LogicWithExtendableCaching<L, C>['execute'] = withSimpleCachingAsync(logic, options);
 
   const invalidate: LogicWithExtendableCaching<L, C>['invalidate'] = async (args) => {
     // define how to get the cache, with support for `forKey` input instead of full input
-    const cache = getCacheFromCacheOptionOrFromForKeyArgs({ args, options, trigger: WithSimpleCachingOnSetTrigger.INVALIDATE });
+    const cache = getCacheFromCacheOptionOrFromForKeyArgs({ args, options, trigger: WithExtendableCachingTrigger.INVALIDATE });
 
     // define the key, with support for `forKey` input instead of `forInput`
     const serializeKey = options.serialize?.key ?? defaultKeySerializationMethod;
@@ -171,21 +180,11 @@ export const withExtendableCaching = <
 
     // set undefined into the cache for this key, to invalidate the cached value
     await cache.set(key, undefined);
-
-    // trigger the onSet hook, if needed
-    if (options.hook?.onSet)
-      // note: we do not wait for the hook to resolve; hooks do not block execution ℹ️
-      options.hook.onSet({
-        trigger: WithSimpleCachingOnSetTrigger.INVALIDATE,
-        forInput: hasForInputProperty(args) ? args.forInput : undefined,
-        forKey: key,
-        value: undefined,
-      });
   };
 
   const update: LogicWithExtendableCaching<L, C>['update'] = async (args) => {
     // define how to get the cache, with support for `forKey` input instead of full input
-    const cache = getCacheFromCacheOptionOrFromForKeyArgs({ args, options, trigger: WithSimpleCachingOnSetTrigger.UPDATE });
+    const cache = getCacheFromCacheOptionOrFromForKeyArgs({ args, options, trigger: WithExtendableCachingTrigger.UPDATE });
 
     // define the key, with support for `forKey` input instead of `forInput`
     const serializeKey = options.serialize?.key ?? defaultKeySerializationMethod;
@@ -197,7 +196,9 @@ export const withExtendableCaching = <
     const deserializedCachedOutput = cachedValue !== undefined ? deserializeValue(cachedValue) : undefined;
 
     // compute the new value
-    const newValue = isAFunction(args.toValue) ? args.toValue({ fromCachedOutput: deserializedCachedOutput }) : args.toValue;
+    const newValue: Awaited<ReturnType<L>> = isAFunction(args.toValue)
+      ? await args.toValue({ fromCachedOutput: deserializedCachedOutput })
+      : await args.toValue;
 
     // define the serialized new value
     const serializeValue = options.serialize?.value ?? defaultValueSerializationMethod;
@@ -205,19 +206,6 @@ export const withExtendableCaching = <
 
     // set the new value for this key
     await cache.set(key, serializedNewValue, { secondsUntilExpiration: options.secondsUntilExpiration });
-
-    // trigger the onSet hook, if needed
-    if (options.hook?.onSet)
-      // note: we do not wait for the hook to resolve; hooks do not block execution ℹ️
-      options.hook.onSet({
-        trigger: WithSimpleCachingOnSetTrigger.UPDATE,
-        forInput: hasForInputProperty(args) ? args.forInput : undefined,
-        forKey: key,
-        value: {
-          output: newValue,
-          cached: serializedNewValue,
-        },
-      });
   };
 
   return { execute, invalidate, update };

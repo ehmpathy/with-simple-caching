@@ -1,11 +1,8 @@
-import { SimpleSyncCache, SimpleCacheExecutionMode, SimpleAsyncCache } from '..';
+import { SimpleAsyncCache, SimpleSyncCache } from '../domain/SimpleCache';
 
 export const createExampleSyncCache = () => {
   const store: Record<string, any> = {};
   const cache: SimpleSyncCache<any> = {
-    meta: {
-      execution: SimpleCacheExecutionMode.SYNCHRONOUS,
-    },
     set: (key: string, value: any, options?: { secondsUntilExpiration?: number }) => {
       store[key] = options ? { value, options } : { value };
     },
@@ -15,15 +12,13 @@ export const createExampleSyncCache = () => {
 };
 
 export const createExampleAsyncCache = <T>() => {
-  const store: Record<string, T | undefined> = {};
+  const store: Record<string, { value: T; options?: any } | undefined> = {};
   const cache: SimpleAsyncCache<T> = {
-    meta: {
-      execution: SimpleCacheExecutionMode.ASYNCHRONOUS,
+    set: async (key: string, value: T | undefined, options?: { secondsUntilExpiration?: number }) => {
+      // eslint-disable-next-line no-nested-ternary
+      store[key] = value !== undefined ? (options ? { value, options } : { value }) : undefined;
     },
-    set: async (key: string, value: T | undefined) => {
-      store[key] = await value;
-    },
-    get: async (key: string) => store[key],
+    get: async (key: string) => store[key]?.value,
   };
   return { cache, store };
 };

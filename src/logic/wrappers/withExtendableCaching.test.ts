@@ -1,26 +1,25 @@
-import { SimpleCache } from '.';
-import { BadRequestError } from './errors/BadRequestError';
-import { WithSimpleCachingOnSetTrigger } from './SimpleCacheOnSetHook';
+import { BadRequestError } from '../../utils/errors/BadRequestError';
 import { withExtendableCaching } from './withExtendableCaching';
-import { createExampleSyncCache } from './__test_assets__/createExampleCache';
+import { createExampleAsyncCache } from '../../__test_assets__/createExampleCache';
+import { SimpleAsyncCache } from '../../domain/SimpleCache';
 
 describe('withExtendableCaching', () => {
   describe('execute', () => {
-    it('should be able to execute logic', () => {
+    it('should be able to execute logic', async () => {
       // define an example fn
       const apiCalls = [];
       const callApi = withExtendableCaching(
-        () => {
+        async () => {
           apiCalls.push(1);
           return Math.random();
         },
-        { cache: createExampleSyncCache().cache },
+        { cache: createExampleAsyncCache().cache },
       );
 
       // call the fn a few times
-      const result1 = callApi.execute();
-      const result2 = callApi.execute();
-      const result3 = callApi.execute();
+      const result1 = await callApi.execute();
+      const result2 = await callApi.execute();
+      const result3 = await callApi.execute();
 
       // check that the response is the same each time
       expect(result1).toEqual(result2);
@@ -35,18 +34,18 @@ describe('withExtendableCaching', () => {
       // define an example fn
       const apiCalls = [];
       const callApi = withExtendableCaching(
-        ({ galaxy }: { galaxy: string }) => {
+        async ({ galaxy }: { galaxy: string }) => {
           apiCalls.push(galaxy);
           return Math.random();
         },
-        { cache: createExampleSyncCache().cache },
+        { cache: createExampleAsyncCache().cache },
       );
 
       // call the fn a few times
-      const result1 = callApi.execute({ galaxy: 'andromeda' });
-      const result2 = callApi.execute({ galaxy: 'pegasus' });
-      const result3 = callApi.execute({ galaxy: 'andromeda' });
-      const result4 = callApi.execute({ galaxy: 'pegasus' });
+      const result1 = await callApi.execute({ galaxy: 'andromeda' });
+      const result2 = await callApi.execute({ galaxy: 'pegasus' });
+      const result3 = await callApi.execute({ galaxy: 'andromeda' });
+      const result4 = await callApi.execute({ galaxy: 'pegasus' });
 
       // check that the response is the same each time the input is the same
       expect(result1).toEqual(result3);
@@ -59,7 +58,7 @@ describe('withExtendableCaching', () => {
       await callApi.invalidate({ forInput: [{ galaxy: 'andromeda' }] });
 
       // now call the cache again for that invalidated value, and prove it called the api again
-      const result5 = callApi.execute({ galaxy: 'andromeda' });
+      const result5 = await callApi.execute({ galaxy: 'andromeda' });
       expect(result5).not.toEqual(result1);
       expect(apiCalls.length).toEqual(3);
     });
@@ -67,18 +66,18 @@ describe('withExtendableCaching', () => {
       // define an example fn
       const apiCalls = [];
       const callApi = withExtendableCaching(
-        ({ galaxy }: { galaxy: string }) => {
+        async ({ galaxy }: { galaxy: string }) => {
           apiCalls.push(galaxy);
           return Math.random();
         },
-        { cache: createExampleSyncCache().cache },
+        { cache: createExampleAsyncCache().cache },
       );
 
       // call the fn a few times
-      const result1 = callApi.execute({ galaxy: 'andromeda' });
-      const result2 = callApi.execute({ galaxy: 'pegasus' });
-      const result3 = callApi.execute({ galaxy: 'andromeda' });
-      const result4 = callApi.execute({ galaxy: 'pegasus' });
+      const result1 = await callApi.execute({ galaxy: 'andromeda' });
+      const result2 = await callApi.execute({ galaxy: 'pegasus' });
+      const result3 = await callApi.execute({ galaxy: 'andromeda' });
+      const result4 = await callApi.execute({ galaxy: 'pegasus' });
 
       // check that the response is the same each time the input is the same
       expect(result1).toEqual(result3);
@@ -91,16 +90,16 @@ describe('withExtendableCaching', () => {
       await callApi.invalidate({ forKey: JSON.stringify([{ galaxy: 'andromeda' }]) });
 
       // now call the cache again for that invalidated value, and prove it called the api again
-      const result5 = callApi.execute({ galaxy: 'andromeda' });
+      const result5 = await callApi.execute({ galaxy: 'andromeda' });
       expect(result5).not.toEqual(result1);
       expect(apiCalls.length).toEqual(3);
     });
     it('should be able to invalidate a cached value by key when the cache is to be defined at runtime from inputs', async () => {
       // define an example fn
-      const { cache } = createExampleSyncCache();
+      const { cache } = createExampleAsyncCache<string>();
       const apiCalls = [];
       const callApi = withExtendableCaching(
-        ({ galaxy }: { galaxy: string }, _: { cache: SimpleCache<string> }) => {
+        async ({ galaxy }: { galaxy: string }, _: { cache: SimpleAsyncCache<string> }) => {
           apiCalls.push(galaxy);
           return Math.random();
         },
@@ -113,10 +112,10 @@ describe('withExtendableCaching', () => {
       );
 
       // call the fn a few times
-      const result1 = callApi.execute({ galaxy: 'andromeda' }, { cache });
-      const result2 = callApi.execute({ galaxy: 'pegasus' }, { cache });
-      const result3 = callApi.execute({ galaxy: 'andromeda' }, { cache });
-      const result4 = callApi.execute({ galaxy: 'pegasus' }, { cache });
+      const result1 = await callApi.execute({ galaxy: 'andromeda' }, { cache });
+      const result2 = await callApi.execute({ galaxy: 'pegasus' }, { cache });
+      const result3 = await callApi.execute({ galaxy: 'andromeda' }, { cache });
+      const result4 = await callApi.execute({ galaxy: 'pegasus' }, { cache });
 
       // check that the response is the same each time the input is the same
       expect(result1).toEqual(result3);
@@ -140,52 +139,9 @@ describe('withExtendableCaching', () => {
       await callApi.invalidate({ forKey: 'andromeda', cache });
 
       // now call the cache again for that invalidated value, and prove it called the api again
-      const result5 = callApi.execute({ galaxy: 'andromeda' }, { cache });
+      const result5 = await callApi.execute({ galaxy: 'andromeda' }, { cache });
       expect(result5).not.toEqual(result1);
       expect(apiCalls.length).toEqual(3);
-    });
-    it('should trigger the onSet hook after invalidating', async () => {
-      // define an example fn
-      const apiCalls = [];
-      const onSetCalls: any[] = [];
-      const callApi = withExtendableCaching(
-        ({ galaxy }: { galaxy: string }) => {
-          apiCalls.push(galaxy);
-          return Math.random();
-        },
-        {
-          cache: createExampleSyncCache().cache,
-          hook: { onSet: (args) => onSetCalls.push(args) }, // just save the args that onSet gives us, so we can evaluate them in the test
-        },
-      );
-
-      // call the fn a few times
-      const result1 = callApi.execute({ galaxy: 'andromeda' });
-      const result2 = callApi.execute({ galaxy: 'pegasus' });
-      const result3 = callApi.execute({ galaxy: 'andromeda' });
-      const result4 = callApi.execute({ galaxy: 'pegasus' });
-
-      // check that the response is the same each time the input is the same
-      expect(result1).toEqual(result3);
-      expect(result2).toEqual(result4);
-
-      // check that "api" and "onSet" were only called twice
-      expect(apiCalls.length).toEqual(2);
-      expect(onSetCalls.length).toEqual(2);
-
-      // invalidate the cached value for one of the inputs
-      await callApi.invalidate({ forInput: [{ galaxy: 'andromeda' }] });
-
-      // prove that onSet was called again
-      expect(onSetCalls.length).toEqual(3);
-
-      // check that onSet looks correct for the first request
-      expect(onSetCalls[2]).toEqual({
-        trigger: WithSimpleCachingOnSetTrigger.INVALIDATE,
-        forInput: [{ galaxy: 'andromeda' }],
-        forKey: JSON.stringify([{ galaxy: 'andromeda' }]),
-        value: undefined,
-      });
     });
   });
   describe('update', () => {
@@ -193,18 +149,18 @@ describe('withExtendableCaching', () => {
       // define an example fn
       const apiCalls = [];
       const callApi = withExtendableCaching(
-        ({ galaxy }: { galaxy: string }) => {
+        async ({ galaxy }: { galaxy: string }) => {
           apiCalls.push(galaxy);
           return Math.random();
         },
-        { cache: createExampleSyncCache().cache },
+        { cache: createExampleAsyncCache().cache },
       );
 
       // call the fn a few times
-      const result1 = callApi.execute({ galaxy: 'andromeda' });
-      const result2 = callApi.execute({ galaxy: 'pegasus' });
-      const result3 = callApi.execute({ galaxy: 'andromeda' });
-      const result4 = callApi.execute({ galaxy: 'pegasus' });
+      const result1 = await callApi.execute({ galaxy: 'andromeda' });
+      const result2 = await callApi.execute({ galaxy: 'pegasus' });
+      const result3 = await callApi.execute({ galaxy: 'andromeda' });
+      const result4 = await callApi.execute({ galaxy: 'pegasus' });
 
       // check that the response is the same each time the input is the same
       expect(result1).toEqual(result3);
@@ -217,7 +173,7 @@ describe('withExtendableCaching', () => {
       await callApi.update({ forInput: [{ galaxy: 'andromeda' }], toValue: 821 });
 
       // now call the cache again
-      const result5 = callApi.execute({ galaxy: 'andromeda' });
+      const result5 = await callApi.execute({ galaxy: 'andromeda' });
 
       // and prove that the value changed to what we wanted to update it to
       expect(result5).toEqual(821);
@@ -230,18 +186,18 @@ describe('withExtendableCaching', () => {
       // define an example fn
       const apiCalls = [];
       const callApi = withExtendableCaching(
-        ({ galaxy }: { galaxy: string }) => {
+        async ({ galaxy }: { galaxy: string }) => {
           apiCalls.push(galaxy);
           return Math.random();
         },
-        { cache: createExampleSyncCache().cache },
+        { cache: createExampleAsyncCache().cache },
       );
 
       // call the fn a few times
-      const result1 = callApi.execute({ galaxy: 'andromeda' });
-      const result2 = callApi.execute({ galaxy: 'pegasus' });
-      const result3 = callApi.execute({ galaxy: 'andromeda' });
-      const result4 = callApi.execute({ galaxy: 'pegasus' });
+      const result1 = await callApi.execute({ galaxy: 'andromeda' });
+      const result2 = await callApi.execute({ galaxy: 'pegasus' });
+      const result3 = await callApi.execute({ galaxy: 'andromeda' });
+      const result4 = await callApi.execute({ galaxy: 'pegasus' });
 
       // check that the response is the same each time the input is the same
       expect(result1).toEqual(result3);
@@ -254,7 +210,7 @@ describe('withExtendableCaching', () => {
       await callApi.update({ forKey: JSON.stringify([{ galaxy: 'andromeda' }]), toValue: 821 });
 
       // now call the cache again
-      const result5 = callApi.execute({ galaxy: 'andromeda' });
+      const result5 = await callApi.execute({ galaxy: 'andromeda' });
 
       // and prove that the value changed to what we wanted to update it to
       expect(result5).toEqual(821);
@@ -265,10 +221,10 @@ describe('withExtendableCaching', () => {
     });
     it('should be able to update a cached value by key when the cache is to be defined at runtime from inputs', async () => {
       // define an example fn
-      const { cache } = createExampleSyncCache();
+      const { cache } = createExampleAsyncCache<string>();
       const apiCalls = [];
       const callApi = withExtendableCaching(
-        ({ galaxy }: { galaxy: string }, _: { cache: SimpleCache<string> }) => {
+        async ({ galaxy }: { galaxy: string }, _: { cache: SimpleAsyncCache<string> }) => {
           apiCalls.push(galaxy);
           return Math.random();
         },
@@ -281,10 +237,10 @@ describe('withExtendableCaching', () => {
       );
 
       // call the fn a few times
-      const result1 = callApi.execute({ galaxy: 'andromeda' }, { cache });
-      const result2 = callApi.execute({ galaxy: 'pegasus' }, { cache });
-      const result3 = callApi.execute({ galaxy: 'andromeda' }, { cache });
-      const result4 = callApi.execute({ galaxy: 'pegasus' }, { cache });
+      const result1 = await callApi.execute({ galaxy: 'andromeda' }, { cache });
+      const result2 = await callApi.execute({ galaxy: 'pegasus' }, { cache });
+      const result3 = await callApi.execute({ galaxy: 'andromeda' }, { cache });
+      const result4 = await callApi.execute({ galaxy: 'pegasus' }, { cache });
 
       // check that the response is the same each time the input is the same
       expect(result1).toEqual(result3);
@@ -308,7 +264,7 @@ describe('withExtendableCaching', () => {
       await callApi.update({ forKey: 'andromeda', toValue: 821, cache });
 
       // now call the cache again
-      const result5 = callApi.execute({ galaxy: 'andromeda' }, { cache });
+      const result5 = await callApi.execute({ galaxy: 'andromeda' }, { cache });
 
       // and prove that the value changed to what we wanted to update it to
       expect(result5).toEqual(821);
@@ -321,18 +277,18 @@ describe('withExtendableCaching', () => {
       // define an example fn
       const apiCalls = [];
       const callApi = withExtendableCaching(
-        ({ galaxy }: { galaxy: string }) => {
+        async ({ galaxy }: { galaxy: string }) => {
           apiCalls.push(galaxy);
           return Math.random();
         },
-        { cache: createExampleSyncCache().cache },
+        { cache: createExampleAsyncCache().cache },
       );
 
       // call the fn a few times
-      const result1 = callApi.execute({ galaxy: 'andromeda' });
-      const result2 = callApi.execute({ galaxy: 'pegasus' });
-      const result3 = callApi.execute({ galaxy: 'andromeda' });
-      const result4 = callApi.execute({ galaxy: 'pegasus' });
+      const result1 = await callApi.execute({ galaxy: 'andromeda' });
+      const result2 = await callApi.execute({ galaxy: 'pegasus' });
+      const result3 = await callApi.execute({ galaxy: 'andromeda' });
+      const result4 = await callApi.execute({ galaxy: 'pegasus' });
 
       // check that the response is the same each time the input is the same
       expect(result1).toEqual(result3);
@@ -345,7 +301,7 @@ describe('withExtendableCaching', () => {
       await callApi.update({ forInput: [{ galaxy: 'andromeda' }], toValue: ({ fromCachedOutput }) => (fromCachedOutput ?? 0) * 2 });
 
       // now call the cache again
-      const result5 = callApi.execute({ galaxy: 'andromeda' });
+      const result5 = await callApi.execute({ galaxy: 'andromeda' });
 
       // and prove that the value changed to what we wanted to update it to
       expect(result5).not.toEqual(result1);
@@ -353,52 +309,6 @@ describe('withExtendableCaching', () => {
 
       // and prove that we didn't call the api again
       expect(apiCalls.length).toEqual(2);
-    });
-    it('should trigger the onSet hook after updating', async () => {
-      // define an example fn
-      const apiCalls = [];
-      const onSetCalls: any[] = [];
-      const callApi = withExtendableCaching(
-        ({ galaxy }: { galaxy: string }) => {
-          apiCalls.push(galaxy);
-          return Math.random();
-        },
-        {
-          cache: createExampleSyncCache().cache,
-          hook: { onSet: (args) => onSetCalls.push(args) }, // just save the args that onSet gives us, so we can evaluate them in the test
-        },
-      );
-
-      // call the fn a few times
-      const result1 = callApi.execute({ galaxy: 'andromeda' });
-      const result2 = callApi.execute({ galaxy: 'pegasus' });
-      const result3 = callApi.execute({ galaxy: 'andromeda' });
-      const result4 = callApi.execute({ galaxy: 'pegasus' });
-
-      // check that the response is the same each time the input is the same
-      expect(result1).toEqual(result3);
-      expect(result2).toEqual(result4);
-
-      // check that "api" and "onSet" were only called twice
-      expect(apiCalls.length).toEqual(2);
-      expect(onSetCalls.length).toEqual(2);
-
-      // invalidate the cached value for one of the inputs
-      await callApi.update({ forInput: [{ galaxy: 'andromeda' }], toValue: 821 });
-
-      // prove that onSet was called again
-      expect(onSetCalls.length).toEqual(3);
-
-      // check that onSet looks correct for the first request
-      expect(onSetCalls[2]).toEqual({
-        trigger: WithSimpleCachingOnSetTrigger.UPDATE,
-        forInput: [{ galaxy: 'andromeda' }],
-        forKey: JSON.stringify([{ galaxy: 'andromeda' }]),
-        value: {
-          output: 821,
-          cached: 821,
-        },
-      });
     });
   });
 });
