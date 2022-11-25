@@ -1,5 +1,5 @@
 import { isAFunction } from 'type-fns';
-import { SimpleCache, withSimpleCaching, WithSimpleCachingOnSetTrigger } from '.';
+import { defaultValueDeserializationMethod, SimpleCache, withSimpleCaching, WithSimpleCachingOnSetTrigger } from '.';
 import { BadRequestError } from './errors/BadRequestError';
 import {
   defaultKeySerializationMethod,
@@ -76,7 +76,7 @@ export interface LogicWithExtendableCaching<
           /**
            * update the cache to this value
            */
-          toValue: ReturnType<L> | ((args: { cachedValue: CV | undefined }) => ReturnType<L>);
+          toValue: ReturnType<L> | ((args: { fromCachedOutput: ReturnType<L> | undefined }) => ReturnType<L>);
         }
       | {
           /**
@@ -87,7 +87,7 @@ export interface LogicWithExtendableCaching<
           /**
            * update the cache to this value
            */
-          toValue: ReturnType<L> | ((args: { cachedValue: CV | undefined }) => ReturnType<L>);
+          toValue: ReturnType<L> | ((args: { fromCachedOutput: ReturnType<L> | undefined }) => ReturnType<L>);
 
           /**
            * the cache to use, if the cache must be was defined from input parameters at runtime
@@ -190,13 +190,20 @@ export const withExtendableCaching = <
     const serializeKey = options.serialize?.key ?? defaultKeySerializationMethod;
     const key = hasForInputProperty(args) ? serializeKey({ forInput: args.forInput }) : args.forKey;
 
-    // define the serialized value
+    // deserialize the cached value
+    const cachedValue = await cache.get(key);
+    const deserializeValue = options.deserialize?.value ?? defaultValueDeserializationMethod;
+    const deserializedCachedOutput = cachedValue !== undefined ? deserializeValue(cachedValue) : undefined;
+
+    // compute the new value
+    const newValue = isAFunction(args.toValue) ? args.toValue({ fromCachedOutput: deserializedCachedOutput }) : args.toValue;
+
+    // define the serialized new value
     const serializeValue = options.serialize?.value ?? defaultValueSerializationMethod;
-    const newValue = isAFunction(args.toValue) ? args.toValue({ cachedValue: await cache.get(key) }) : args.toValue;
-    const serializedValue = serializeValue(newValue);
+    const serializedNewValue = serializeValue(newValue);
 
     // set the new value for this key
-    await cache.set(key, serializedValue, { secondsUntilExpiration: options.secondsUntilExpiration });
+    await cache.set(key, serializedNewValue, { secondsUntilExpiration: options.secondsUntilExpiration });
 
     // trigger the onSet hook, if needed
     if (options.hook?.onSet)
@@ -207,7 +214,7 @@ export const withExtendableCaching = <
         forKey: key,
         value: {
           output: newValue,
-          cached: serializedValue,
+          cached: serializedNewValue,
         },
       });
   };
