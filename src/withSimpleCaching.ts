@@ -1,10 +1,8 @@
 import { isAFunction, isAPromise } from 'type-fns';
+import { SimpleCache } from '.';
 import { BadRequestError } from './errors/BadRequestError';
-
-export interface SimpleCache<T> {
-  get: (key: string) => T | undefined | Promise<Awaited<T> | undefined>;
-  set: (key: string, value: T, options?: { secondsUntilExpiration?: number }) => void | Promise<void>;
-}
+import { SimpleCacheExtractionMethod } from './SimpleCache';
+import { SimpleCacheOnSetHook, WithSimpleCachingOnSetTrigger } from './SimpleCacheOnSetHook';
 
 export type KeySerializationMethod<LI> = (args: { forInput: LI }) => string;
 
@@ -13,100 +11,12 @@ export const defaultKeySerializationMethod: KeySerializationMethod<any> = ({ for
 export const defaultValueSerializationMethod = noOp;
 export const defaultValueDeserializationMethod = noOp;
 
-export type SimpleCacheResolutionMethod<LI extends any[], CV extends any, C extends SimpleCache<CV> = SimpleCache<CV>> = (args: {
-  fromInput: LI;
-}) => C;
-export const getCacheFromCacheOption = <LI extends any[], CV extends any>({
-  forInput,
-  cacheOption,
-}: {
-  forInput: LI;
-  cacheOption: SimpleCache<CV> | SimpleCacheResolutionMethod<LI, CV>;
-}): SimpleCache<CV> => {
-  if (isAFunction(cacheOption)) {
-    const foundCache = cacheOption({ fromInput: forInput });
-    if (!foundCache) throw new BadRequestError('could not extract cache from input with cache resolution method', { forInput });
-    return foundCache;
-  }
-  return cacheOption;
-};
-
 /**
- * enumerates all of the methods exposed by with-simple-caching which are capable of setting to the cache
+ * how the cache can be specified for use with simple caching
+ * - either directly
+ * - or through a cache extraction method, which grabs the cache from input args
  */
-export enum WithSimpleCachingOnSetTrigger {
-  /**
-   * the execute method sets to the cache when your wrapped logic is executed
-   */
-  EXECUTE = 'EXECUTE',
-
-  /**
-   * the invalidate method sets to the cache when the invalidate method is executed
-   */
-  INVALIDATE = 'INVALIDATE',
-
-  /**
-   * the update method sets to the cache when the update method is executed
-   */
-  UPDATE = 'UPDATE',
-}
-
-/**
- * a hook which is triggered onSet to the cache
- *
- * note
- * - this hook is simply kicked off, it will not be awaited, therefore
- *   - make sure you catch any errors thrown any promises you may start in the hook
- * - this hook exposes the exact value that was used when setting to cache
- *   - it exposes the exact output value, returned by the logic (if logic is async, this will be a promise)
- *   - it exposes the exact serialized value, given to cache onSet (if logic was async, this will be a promise)
- */
-export type SimpleCacheOnSetHook<
-  /**
-   * the logic we are caching the responses for
-   */
-  L extends (...args: any[]) => any,
-  /**
-   * the shape of the value in the cache
-   */
-  CV extends any
-> = (args: {
-  /**
-   * the method which triggered this onSet hook
-   */
-  trigger: WithSimpleCachingOnSetTrigger;
-
-  /**
-   * the input for which set was called
-   *
-   * note
-   * - this may be undefined if `invalidation` was called `forKey`, instead of `forInput`
-   */
-  forInput: Parameters<L> | undefined;
-
-  /**
-   * the cache key that the input was serialized into
-   */
-  forKey: string;
-
-  /**
-   * the value which was set to the cache, defined as either
-   * - the value which was set to the cache + the output from which the cached value was serialized
-   * or
-   * - undefined, in the case where a cache invalidation occured
-   */
-  value?: {
-    /**
-     * the direct output value returned by the logic
-     */
-    output: ReturnType<L>;
-
-    /**
-     * the value produced by serializing the output, with which cache.set was called
-     */
-    cached: CV;
-  };
-}) => void;
+export type WithSimpleCachingCacheOption<LI extends any[], C extends SimpleCache<any>> = C | SimpleCacheExtractionMethod<LI, C>;
 
 /**
  * options to configure caching for use with-simple-caching
@@ -117,18 +27,36 @@ export interface WithSimpleCachingOptions<
    */
   L extends (...args: any[]) => any,
   /**
-   * the shape of the value in the cache
+   * the type of cache being used
    */
-  CV extends any
+  C extends SimpleCache<any>
 > {
-  cache: SimpleCache<CV> | SimpleCacheResolutionMethod<Parameters<L>, CV>;
-  serialize?: { key?: KeySerializationMethod<Parameters<L>>; value?: (output: ReturnType<L>) => CV };
-  deserialize?: { value?: (cached: CV) => ReturnType<L> };
+  cache: WithSimpleCachingCacheOption<Parameters<L>, C>;
+  serialize?: { key?: KeySerializationMethod<Parameters<L>>; value?: (output: ReturnType<L>) => ReturnType<C['get']> };
+  deserialize?: { value?: (cached: ReturnType<C['get']>) => ReturnType<L> };
   secondsUntilExpiration?: number;
   hook?: {
-    onSet: SimpleCacheOnSetHook<L, CV>;
+    onSet: SimpleCacheOnSetHook<L, ReturnType<C['get']>>;
   };
 }
+
+/**
+ * how to extract the with simple caching cache option
+ */
+export const getCacheFromCacheOption = <LI extends any[], C extends SimpleCache<any>>({
+  forInput,
+  cacheOption,
+}: {
+  forInput: LI;
+  cacheOption: WithSimpleCachingCacheOption<LI, C>;
+}): C => {
+  if (isAFunction(cacheOption)) {
+    const foundCache = cacheOption({ fromInput: forInput });
+    if (!foundCache) throw new BadRequestError('could not extract cache from input with cache resolution method', { forInput });
+    return foundCache;
+  }
+  return cacheOption;
+};
 
 /**
  * caches the promise of each invocation, based on serialization of the inputs.
@@ -150,9 +78,9 @@ export const withSimpleCaching = <
    */
   L extends (...args: any[]) => any,
   /**
-   * the shape of the value in the cache
+   * the type of cache being used
    */
-  CV extends any
+  C extends SimpleCache<any>
 >(
   logic: L,
   {
@@ -164,7 +92,7 @@ export const withSimpleCaching = <
     deserialize: { value: deserializeValue = noOp } = {},
     secondsUntilExpiration,
     hook,
-  }: WithSimpleCachingOptions<L, CV>,
+  }: WithSimpleCachingOptions<L, C>,
 ): L => {
   return ((...args: Parameters<L>): ReturnType<L> => {
     // define key based on args the function was invoked with
@@ -177,7 +105,7 @@ export const withSimpleCaching = <
     const cachedValueOrPromise = cache.get(key);
 
     // define what to do with the value of this key in the cache
-    const onCachedResolved = ({ cached }: { cached: CV | undefined }): ReturnType<L> => {
+    const onCachedResolved = ({ cached }: { cached: ReturnType<C['get']> | undefined }): ReturnType<L> => {
       // return the value if its already cached
       if (cached !== undefined) return deserializeValue(cached);
 

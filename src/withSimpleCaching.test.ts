@@ -1,6 +1,7 @@
-import { createCache } from 'simple-in-memory-cache';
-import { WithSimpleCachingOnSetTrigger } from '.';
+import { SimpleCacheExecutionMode } from '.';
+import { WithSimpleCachingOnSetTrigger } from './SimpleCacheOnSetHook';
 import { withSimpleCaching } from './withSimpleCaching';
+import { createExampleSyncCache, createExampleAsyncCache } from './__test_assets__/createExampleCache';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -14,7 +15,7 @@ describe('withSimpleCaching', () => {
           apiCalls.push(1);
           return Math.random();
         },
-        { cache: createCache() },
+        { cache: createExampleSyncCache().cache },
       );
 
       // call the fn a few times
@@ -37,7 +38,7 @@ describe('withSimpleCaching', () => {
           apiCalls.push(name);
           return Math.random();
         },
-        { cache: createCache() },
+        { cache: createExampleSyncCache().cache },
       );
 
       // call the fn a few times
@@ -62,7 +63,7 @@ describe('withSimpleCaching', () => {
         () => {
           throw expectedError;
         },
-        { cache: createCache() },
+        { cache: createExampleSyncCache().cache },
       );
 
       // call the fn and check that we can catch the error
@@ -76,15 +77,6 @@ describe('withSimpleCaching', () => {
   });
   describe('asynchronous logic, synchronous cache', () => {
     it('should be possible to stringify the result of a promise in the cache', async () => {
-      // define an example cache that can only deal with strings or numbers
-      const store: Record<string, any> = {};
-      const cache = {
-        set: (key: string, value: Promise<string | number>) => {
-          store[key] = value;
-        },
-        get: (key: string) => store[key],
-      };
-
       // define an example fn
       const apiCalls = [];
       const callApi = withSimpleCaching(
@@ -93,9 +85,7 @@ describe('withSimpleCaching', () => {
           await sleep(100);
           return Math.random();
         },
-        {
-          cache,
-        },
+        { cache: createExampleSyncCache().cache },
       );
 
       // call the fn a few times
@@ -112,15 +102,6 @@ describe('withSimpleCaching', () => {
       expect(apiCalls.length).toEqual(2);
     });
     it('should be possible to wait for the get promise to resolve before deciding whether to set or return', async () => {
-      // define an example cache that can only deal with strings or numbers
-      const store: Record<string, any> = {};
-      const cache = {
-        set: (key: string, value: Promise<string | number>) => {
-          store[key] = value;
-        },
-        get: async (key: string) => store[key],
-      };
-
       // define an example fn
       const apiCalls = [];
       const callApi = withSimpleCaching(
@@ -128,9 +109,7 @@ describe('withSimpleCaching', () => {
           apiCalls.push(name);
           return Math.random();
         },
-        {
-          cache,
-        },
+        { cache: createExampleSyncCache().cache },
       );
 
       // call the fn a few times
@@ -153,7 +132,7 @@ describe('withSimpleCaching', () => {
         async () => {
           throw expectedError;
         },
-        { cache: createCache() },
+        { cache: createExampleSyncCache().cache },
       );
 
       // call the fn and check that we can catch the error
@@ -167,14 +146,7 @@ describe('withSimpleCaching', () => {
   });
   describe('asynchronous logic, asynchronous cache', () => {
     it('should be possible for a cache to await and persist the resolved value, not the promise', async () => {
-      // define an example cache that can only deal with strings or numbers
-      const store: Record<string, any> = {};
-      const cache = {
-        set: async (key: string, value: Promise<string | number>) => {
-          store[key] = await value;
-        },
-        get: (key: string) => store[key],
-      };
+      const { cache, store } = createExampleAsyncCache();
 
       // define an example fn
       const apiCalls = [];
@@ -184,9 +156,7 @@ describe('withSimpleCaching', () => {
           await sleep(100);
           return Math.random();
         },
-        {
-          cache,
-        },
+        { cache },
       );
 
       // call the fn a few times
@@ -204,17 +174,10 @@ describe('withSimpleCaching', () => {
 
       // check that the value in the cache is not the promise, but the value itself
       expect(typeof Promise.resolve(821)).toEqual('object'); // prove that a promise to resolve a number has a typeof object
-      expect(typeof cache.get(JSON.stringify([{ name: 'casey' }]))).toEqual('number'); // now prove that the value saved into the cache for this name is definetly not a promise
+      expect(typeof store[JSON.stringify([{ name: 'casey' }])]).toEqual('number'); // now prove that the value saved into the cache for this name is definetly not a promise
     });
     it('should be possible to catch an error which was rejected by a promise set to the cache in an async cache which awaited the value onSet', async () => {
-      // define an example cache that can only deal with strings or numbers
-      const store: Record<string, any> = {};
-      const cache = {
-        set: async (key: string, value: Promise<string | number>) => {
-          store[key] = await value;
-        },
-        get: (key: string) => store[key],
-      };
+      const { cache, store } = createExampleAsyncCache();
 
       // define an example fn
       const expectedError = new Error('surprise!');
@@ -223,9 +186,7 @@ describe('withSimpleCaching', () => {
         async ({}: { name: string }) => {
           throw expectedError;
         },
-        {
-          cache,
-        },
+        { cache },
       );
 
       // prove that we can catch the error
@@ -237,7 +198,38 @@ describe('withSimpleCaching', () => {
       }
 
       // prove that nothing was set to the cache
-      expect(typeof cache.get(JSON.stringify([{ name: 'casey' }]))).toEqual('undefined');
+      expect(typeof store[JSON.stringify([{ name: 'casey' }])]).toEqual('undefined');
+    });
+    it('should have appropriate types for an async cache that caches awaited values', async () => {
+      const { cache, store } = createExampleAsyncCache();
+
+      // define an example fn
+      const apiCalls = [];
+      const callApi = withSimpleCaching(
+        async ({ name }: { name: string }) => {
+          apiCalls.push(name);
+          await sleep(100);
+          return Math.random();
+        },
+        { cache },
+      );
+
+      // call the fn a few times
+      const result1 = await callApi({ name: 'casey' });
+      const result2 = await callApi({ name: 'katya' });
+      const result3 = await callApi({ name: 'casey' });
+      const result4 = await callApi({ name: 'katya' });
+
+      // check that the response is the same each time the input is the same
+      expect(result1).toEqual(result3);
+      expect(result2).toEqual(result4);
+
+      // check that "api" was only called twice (once per name)
+      expect(apiCalls.length).toEqual(2);
+
+      // check that the value in the cache is not the promise, but the value itself
+      expect(typeof Promise.resolve(821)).toEqual('object'); // prove that a promise to resolve a number has a typeof object
+      expect(typeof store[JSON.stringify([{ name: 'casey' }])]).toEqual('number'); // now prove that the value saved into the cache for this name is definetly not a promise
     });
   });
   describe('(de)serialization', () => {
@@ -250,7 +242,7 @@ describe('withSimpleCaching', () => {
           return name;
         },
         {
-          cache: createCache(),
+          cache: createExampleSyncCache().cache,
           serialize: {
             key: ({ forInput }) => forInput[0].name.slice(0, 1), // serialize to only the first letter of the name arg
           },
@@ -283,6 +275,9 @@ describe('withSimpleCaching', () => {
         },
         {
           cache: {
+            meta: {
+              execution: SimpleCacheExecutionMode.SYNCHRONOUS,
+            },
             get: (key: string) => store[key], // never returns a response, so everyone runs against "set"
             set: (key: string, value: string) => {
               if (typeof value !== 'string') throw new Error('value was not a string');
@@ -321,7 +316,9 @@ describe('withSimpleCaching', () => {
           apiCalls.push(1);
           return undefined; // return undefined each time
         },
-        { cache: createCache() },
+        {
+          cache: createExampleSyncCache().cache,
+        },
       );
 
       // call the fn a few times
@@ -338,14 +335,7 @@ describe('withSimpleCaching', () => {
       expect(apiCalls.length).toEqual(3);
     });
     it('should support cache invalidation by calling the cache again if cache value was set to undefined externally', async () => {
-      // define an example cache that can only deal with strings or numbers
-      const store: Record<string, any> = {};
-      const cache = {
-        set: (key: string, value: Promise<string | number>) => {
-          store[key] = value;
-        },
-        get: (key: string) => store[key],
-      };
+      const { cache, store } = createExampleSyncCache();
 
       // define an example fn
       const apiCalls = [];
@@ -354,7 +344,9 @@ describe('withSimpleCaching', () => {
           apiCalls.push(1);
           return Math.random();
         },
-        { cache },
+        {
+          cache,
+        },
       );
 
       // call the fn a few times
@@ -390,7 +382,7 @@ describe('withSimpleCaching', () => {
           apiCalls.push(1);
           return null; // return null each time
         },
-        { cache: createCache() },
+        { cache: createExampleSyncCache().cache },
       );
 
       // call the fn a few times
@@ -408,6 +400,8 @@ describe('withSimpleCaching', () => {
   });
   describe('expiration', () => {
     it('should apply the secondsUntilExpiration option correctly', async () => {
+      const { cache, store } = createExampleSyncCache();
+
       // define an example fn
       const apiCalls = [];
       const callApi = withSimpleCaching(
@@ -416,38 +410,16 @@ describe('withSimpleCaching', () => {
           return Math.random();
         },
         {
-          cache: createCache(),
+          cache,
           secondsUntilExpiration: 3, // wait three seconds until expiration
         },
       );
 
-      // call the fn a few times
-      const result1 = callApi();
-      const result2 = callApi();
-      const result3 = callApi();
+      // call the fn
+      callApi();
 
-      // check that the response is the same each time
-      expect(result1).toEqual(result2);
-      expect(result2).toEqual(result3);
-
-      // check that "api" was only called once
-      expect(apiCalls.length).toEqual(1);
-
-      // now wait 1 second
-      await sleep(1000);
-
-      // prove that calling the api still returns cached result
-      const result4 = callApi();
-      expect(result4).toEqual(result1);
-      expect(apiCalls.length).toEqual(1);
-
-      // now wait 2.5 more seconds, exceeding the expiration time since first call
-      await sleep(2500);
-
-      // and prove that a call now would actually hit the api
-      const result5 = callApi();
-      expect(result5).not.toEqual(result1);
-      expect(apiCalls.length).toEqual(2);
+      // confirm that it passed the secondsUntilExpiration through to the cache
+      expect(store['[]']).toMatchObject({ options: { secondsUntilExpiration: 3 } });
     });
   });
   describe('hooks', () => {
@@ -461,7 +433,7 @@ describe('withSimpleCaching', () => {
           return Math.random();
         },
         {
-          cache: createCache(),
+          cache: createExampleSyncCache().cache,
           hook: { onSet: (args) => onSetCalls.push(args) }, // just save the args that onSet gives us, so we can evaluate them in the test
         },
       );
@@ -515,7 +487,7 @@ describe('withSimpleCaching', () => {
           return Math.random();
         },
         {
-          cache: createCache(),
+          cache: createExampleSyncCache().cache,
           hook: { onSet: (args) => onSetCalls.push(args) }, // just save the args that onSet gives us, so we can evaluate them in the test
         },
       );
@@ -556,14 +528,7 @@ describe('withSimpleCaching', () => {
       });
     });
     it('should trigger an onSet hook after setting - asynchronous logic, asynchronous cache', async () => {
-      // define an example cache that can only deal with numbers
-      const store: Record<string, any> = {};
-      const cache = {
-        set: async (key: string, value: Promise<number>) => {
-          store[key] = await value;
-        },
-        get: (key: string) => store[key],
-      };
+      const { cache, store } = createExampleAsyncCache();
 
       // define an example fn
       const apiCalls = [];
@@ -606,7 +571,7 @@ describe('withSimpleCaching', () => {
 
       // check that the value in the cache is not the promise, but the value itself
       expect(typeof Promise.resolve(821)).toEqual('object'); // prove that a promise to resolve a number has a typeof object
-      expect(typeof cache.get(JSON.stringify([{ galaxy: 'andromeda' }]))).toEqual('number'); // now prove that the value saved into the cache for this name is definetly not a promise
+      expect(typeof store[JSON.stringify([{ galaxy: 'andromeda' }])]).toEqual('number'); // now prove that the value saved into the cache for this name is definetly not a promise
 
       // now prove that the type of the value given to the 'onSet' was still a promise (since that is the output of the function + that is what was given to set to the cache)
       expect(onSetCalls[0]).toEqual({

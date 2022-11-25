@@ -1,6 +1,7 @@
 import { isAFunction } from 'type-fns';
-import { defaultValueDeserializationMethod, SimpleCache, withSimpleCaching, WithSimpleCachingOnSetTrigger } from '.';
+import { defaultValueDeserializationMethod, SimpleCache, withSimpleCaching } from '.';
 import { BadRequestError } from './errors/BadRequestError';
+import { WithSimpleCachingOnSetTrigger } from './SimpleCacheOnSetHook';
 import {
   defaultKeySerializationMethod,
   defaultValueSerializationMethod,
@@ -22,9 +23,9 @@ export interface LogicWithExtendableCaching<
    */
   L extends (...args: any[]) => any,
   /**
-   * the shape of the value in the cache
+   * the type of cache being used
    */
-  CV extends any
+  C extends SimpleCache<any>
 > {
   /**
    * execute the logic with caching
@@ -54,7 +55,7 @@ export interface LogicWithExtendableCaching<
           /**
            * the cache to use, if the cache must be was defined from input parameters at runtime
            */
-          cache?: SimpleCache<CV>;
+          cache?: C;
         },
   ) => Promise<void>;
 
@@ -92,7 +93,7 @@ export interface LogicWithExtendableCaching<
           /**
            * the cache to use, if the cache must be was defined from input parameters at runtime
            */
-          cache?: SimpleCache<CV>;
+          cache?: C;
         },
   ) => Promise<void>;
 }
@@ -106,18 +107,18 @@ export const getCacheFromCacheOptionOrFromForKeyArgs = <
    */
   L extends (...args: any[]) => any,
   /**
-   * the shape of the value in the cache
+   * the type of cache being used
    */
-  CV extends any
+  C extends SimpleCache<any>
 >({
   args,
   options,
   trigger,
 }: {
-  args: Parameters<LogicWithExtendableCaching<L, CV>['invalidate']>[0] | Parameters<LogicWithExtendableCaching<L, CV>['update']>[0];
-  options: WithSimpleCachingOptions<L, CV>;
+  args: Parameters<LogicWithExtendableCaching<L, C>['invalidate']>[0] | Parameters<LogicWithExtendableCaching<L, C>['update']>[0];
+  options: WithSimpleCachingOptions<L, C>;
   trigger: WithSimpleCachingOnSetTrigger;
-}): SimpleCache<CV> => {
+}): C => {
   // if the args have the forInput property, then we can grab the cache like normal
   if (hasForInputProperty(args)) return getCacheFromCacheOption({ forInput: args.forInput, cacheOption: options.cache });
 
@@ -151,16 +152,16 @@ export const withExtendableCaching = <
    */
   L extends (...args: any[]) => any,
   /**
-   * the shape of the value in the cache
+   * the type of cache being used
    */
-  CV extends any
+  C extends SimpleCache<any>
 >(
   logic: L,
-  options: WithSimpleCachingOptions<L, CV>,
-): LogicWithExtendableCaching<L, CV> => {
-  const execute: LogicWithExtendableCaching<L, CV>['execute'] = withSimpleCaching(logic, options);
+  options: WithSimpleCachingOptions<L, C>,
+): LogicWithExtendableCaching<L, C> => {
+  const execute: LogicWithExtendableCaching<L, C>['execute'] = withSimpleCaching(logic, options);
 
-  const invalidate: LogicWithExtendableCaching<L, CV>['invalidate'] = async (args) => {
+  const invalidate: LogicWithExtendableCaching<L, C>['invalidate'] = async (args) => {
     // define how to get the cache, with support for `forKey` input instead of full input
     const cache = getCacheFromCacheOptionOrFromForKeyArgs({ args, options, trigger: WithSimpleCachingOnSetTrigger.INVALIDATE });
 
@@ -169,7 +170,7 @@ export const withExtendableCaching = <
     const key = hasForInputProperty(args) ? serializeKey({ forInput: args.forInput }) : args.forKey;
 
     // set undefined into the cache for this key, to invalidate the cached value
-    await cache.set(key, undefined as CV);
+    await cache.set(key, undefined);
 
     // trigger the onSet hook, if needed
     if (options.hook?.onSet)
@@ -182,7 +183,7 @@ export const withExtendableCaching = <
       });
   };
 
-  const update: LogicWithExtendableCaching<L, CV>['update'] = async (args) => {
+  const update: LogicWithExtendableCaching<L, C>['update'] = async (args) => {
     // define how to get the cache, with support for `forKey` input instead of full input
     const cache = getCacheFromCacheOptionOrFromForKeyArgs({ args, options, trigger: WithSimpleCachingOnSetTrigger.UPDATE });
 

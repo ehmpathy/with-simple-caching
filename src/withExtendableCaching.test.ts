@@ -1,8 +1,8 @@
-import { createCache } from 'simple-in-memory-cache';
 import { SimpleCache } from '.';
 import { BadRequestError } from './errors/BadRequestError';
+import { WithSimpleCachingOnSetTrigger } from './SimpleCacheOnSetHook';
 import { withExtendableCaching } from './withExtendableCaching';
-import { WithSimpleCachingOnSetTrigger } from './withSimpleCaching';
+import { createExampleSyncCache } from './__test_assets__/createExampleCache';
 
 describe('withExtendableCaching', () => {
   describe('execute', () => {
@@ -14,7 +14,7 @@ describe('withExtendableCaching', () => {
           apiCalls.push(1);
           return Math.random();
         },
-        { cache: createCache() },
+        { cache: createExampleSyncCache().cache },
       );
 
       // call the fn a few times
@@ -39,7 +39,7 @@ describe('withExtendableCaching', () => {
           apiCalls.push(galaxy);
           return Math.random();
         },
-        { cache: createCache() },
+        { cache: createExampleSyncCache().cache },
       );
 
       // call the fn a few times
@@ -71,7 +71,7 @@ describe('withExtendableCaching', () => {
           apiCalls.push(galaxy);
           return Math.random();
         },
-        { cache: createCache() },
+        { cache: createExampleSyncCache().cache },
       );
 
       // call the fn a few times
@@ -97,7 +97,7 @@ describe('withExtendableCaching', () => {
     });
     it('should be able to invalidate a cached value by key when the cache is to be defined at runtime from inputs', async () => {
       // define an example fn
-      const cache = createCache();
+      const { cache } = createExampleSyncCache();
       const apiCalls = [];
       const callApi = withExtendableCaching(
         ({ galaxy }: { galaxy: string }, _: { cache: SimpleCache<string> }) => {
@@ -154,7 +154,7 @@ describe('withExtendableCaching', () => {
           return Math.random();
         },
         {
-          cache: createCache(),
+          cache: createExampleSyncCache().cache,
           hook: { onSet: (args) => onSetCalls.push(args) }, // just save the args that onSet gives us, so we can evaluate them in the test
         },
       );
@@ -197,7 +197,7 @@ describe('withExtendableCaching', () => {
           apiCalls.push(galaxy);
           return Math.random();
         },
-        { cache: createCache() },
+        { cache: createExampleSyncCache().cache },
       );
 
       // call the fn a few times
@@ -234,7 +234,7 @@ describe('withExtendableCaching', () => {
           apiCalls.push(galaxy);
           return Math.random();
         },
-        { cache: createCache() },
+        { cache: createExampleSyncCache().cache },
       );
 
       // call the fn a few times
@@ -265,7 +265,7 @@ describe('withExtendableCaching', () => {
     });
     it('should be able to update a cached value by key when the cache is to be defined at runtime from inputs', async () => {
       // define an example fn
-      const cache = createCache();
+      const { cache } = createExampleSyncCache();
       const apiCalls = [];
       const callApi = withExtendableCaching(
         ({ galaxy }: { galaxy: string }, _: { cache: SimpleCache<string> }) => {
@@ -325,7 +325,7 @@ describe('withExtendableCaching', () => {
           apiCalls.push(galaxy);
           return Math.random();
         },
-        { cache: createCache() },
+        { cache: createExampleSyncCache().cache },
       );
 
       // call the fn a few times
@@ -364,7 +364,7 @@ describe('withExtendableCaching', () => {
           return Math.random();
         },
         {
-          cache: createCache(),
+          cache: createExampleSyncCache().cache,
           hook: { onSet: (args) => onSetCalls.push(args) }, // just save the args that onSet gives us, so we can evaluate them in the test
         },
       );
