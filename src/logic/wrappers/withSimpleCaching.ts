@@ -75,6 +75,9 @@ export const withSimpleCaching = <
     const serializedOutput = serializeValue(output);
     cache.set(key, serializedOutput, { secondsUntilExpiration });
 
+    // if the output was undefined, we can just return here - no deserialization needed
+    if (output === undefined) return output;
+
     // and now re-get from the cache, to ensure that output on first response === output on second response
     const cachedValueNow: Awaited<ReturnType<C['get']>> = cache.get(key);
     if (isNotUndefined(cachedValueNow)) return deserializeValue(cachedValueNow);
