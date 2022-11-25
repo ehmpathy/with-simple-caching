@@ -1,6 +1,11 @@
 import { isAFunction } from 'type-fns';
 import { BadRequestError } from '../../utils/errors/BadRequestError';
-import { SimpleCache, SimpleCacheExtractionMethod } from '../../domain/SimpleCache';
+import { SimpleCache } from '../../domain/SimpleCache';
+
+/**
+ * a method which specifies where how to extract a simple-cache from input args
+ */
+export type SimpleCacheExtractionMethod<LI extends any[], C extends SimpleCache<any>> = (args: { fromInput: LI }) => C;
 
 /**
  * how the cache can be specified for use with simple caching

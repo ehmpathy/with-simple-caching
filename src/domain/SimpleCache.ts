@@ -18,8 +18,3 @@ export interface SimpleAsyncCache<T> {
  * a simple cache
  */
 export type SimpleCache<T> = SimpleAsyncCache<T> | SimpleSyncCache<T>;
-
-/**
- * a method which specifies where how to extract a simple-cache from input args
- */
-export type SimpleCacheExtractionMethod<LI extends any[], C extends SimpleCache<any>> = (args: { fromInput: LI }) => C;

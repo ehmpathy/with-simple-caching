@@ -60,6 +60,6 @@
     "uuid": "^3.3.3"
   },
   "dependencies": {
-    "type-fns": "^0.4.1"
+    "type-fns": "^0.6.0"
   }
 }

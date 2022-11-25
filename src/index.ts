@@ -1,5 +1,5 @@
 export { SimpleCache, SimpleAsyncCache, SimpleSyncCache } from './domain/SimpleCache';
-export { WithSimpleCachingCacheOption } from './logic/options/getCacheFromCacheOption';
+export { WithSimpleCachingCacheOption, SimpleCacheExtractionMethod } from './logic/options/getCacheFromCacheOption';
 export {
   KeySerializationMethod,
   defaultKeySerializationMethod,

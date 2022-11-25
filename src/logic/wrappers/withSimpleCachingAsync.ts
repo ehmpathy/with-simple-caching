@@ -1,3 +1,4 @@
+import { isNotUndefined, NotUndefined } from 'type-fns';
 import { SimpleAsyncCache } from '../../domain/SimpleCache';
 import { getCacheFromCacheOption, WithSimpleCachingCacheOption } from '../options/getCacheFromCacheOption';
 import { defaultKeySerializationMethod, defaultValueSerializationMethod, KeySerializationMethod, noOp } from '../serde/defaults';
@@ -9,15 +10,20 @@ export interface WithSimpleCachingAsyncOptions<
   /**
    * the logic we are caching the responses for
    */
-  L extends (...args: any[]) => any,
+  L extends (...args: any) => any,
   /**
    * the type of cache being used
    */
   C extends SimpleAsyncCache<any>
 > {
   cache: WithSimpleCachingCacheOption<Parameters<L>, C>;
-  serialize?: { key?: KeySerializationMethod<Parameters<L>>; value?: (output: Awaited<ReturnType<L>>) => Awaited<ReturnType<C['get']>> };
-  deserialize?: { value?: (cached: Awaited<ReturnType<C['get']>>) => Awaited<ReturnType<L>> };
+  serialize?: {
+    key?: KeySerializationMethod<Parameters<L>>;
+    value?: (output: Awaited<ReturnType<L>>) => NotUndefined<Awaited<ReturnType<C['get']>>>;
+  };
+  deserialize?: {
+    value?: (cached: NotUndefined<Awaited<ReturnType<C['get']>>>) => Awaited<ReturnType<L>>;
+  };
   secondsUntilExpiration?: number;
 }
 
@@ -57,7 +63,7 @@ export const withSimpleCachingAsync = <
 
     // see if its already cached
     const cachedValue: Awaited<ReturnType<C['get']>> = await cache.get(key);
-    if (cachedValue !== undefined) return deserializeValue(cachedValue); // if already cached, return it immediately
+    if (isNotUndefined(cachedValue)) return deserializeValue(cachedValue); // if already cached, return it immediately
 
     // if its not, grab the output from the logic
     const output: Awaited<ReturnType<L>> = await logic(...args);
@@ -68,6 +74,15 @@ export const withSimpleCachingAsync = <
 
     // and now re-get from the cache, to ensure that output on first response === output on second response
     const cachedValueNow: Awaited<ReturnType<C['get']>> = await cache.get(key);
-    return deserializeValue(cachedValueNow);
+    if (isNotUndefined(cachedValueNow)) return deserializeValue(cachedValueNow);
+
+    // otherwise, somehow, get-after-set returned undefined. warn about this and return output
+    // eslint-disable-next-line no-console
+    console.warn(
+      // warn about this because it should never occur
+      'withSimpleCachingAsync encountered a situation which should not occur: cache.get returned undefined immediately after having been set. returning the output directly to prevent irrecoverable failure.',
+      { key },
+    );
+    return output;
   }) as any) as L;
 };

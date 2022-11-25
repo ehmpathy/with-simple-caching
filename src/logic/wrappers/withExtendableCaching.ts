@@ -26,7 +26,7 @@ export interface LogicWithExtendableCaching<
   /**
    * the logic we are caching the responses for
    */
-  L extends (...args: any[]) => any,
+  L extends (...args: any) => any,
   /**
    * the type of cache being used
    */
@@ -114,7 +114,7 @@ export const getCacheFromCacheOptionOrFromForKeyArgs = <
   /**
    * the logic we are caching the responses for
    */
-  L extends (...args: any[]) => any,
+  L extends (...args: any) => any,
   /**
    * the type of cache being used
    */
@@ -159,7 +159,7 @@ export const withExtendableCaching = <
   /**
    * the logic we are caching the responses for
    */
-  L extends (...args: any[]) => Promise<any>,
+  L extends (...args: any) => Promise<any>,
   /**
    * the type of cache being used
    */
