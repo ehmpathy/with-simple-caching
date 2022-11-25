@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.10.1](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.10.0...v0.10.1) (2022-11-25)
+
+
+### Bug Fixes
+
+* **logs:** dont warn about undefined get-after-set if output really was undefined ([9c3a3a1](https://www.github.com/ehmpathy/with-simple-caching/commit/9c3a3a1f4fc310f5a177aa431f2559586c7b0571))
+
 ## [0.10.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.9.5...v0.10.0) (2022-11-25)
 
 
