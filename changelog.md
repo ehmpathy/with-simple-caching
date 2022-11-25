@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.10.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.9.5...v0.10.0) (2022-11-25)
+
+
+### Features
+
+* **contract:** extract out async support into withSimpleCachingAsync for better types ([eebbc00](https://www.github.com/ehmpathy/with-simple-caching/commit/eebbc007a4f7e756defeec7a4c1924fb91c70c67))
+* **types:** formally distinguish between SimpleSyncCache and SimpleAsyncCache ([0d81b4c](https://www.github.com/ehmpathy/with-simple-caching/commit/0d81b4c9e7c49206fc5ddbda7bfb3f0601b84cb4))
+
+
+### Bug Fixes
+
+* **serde:** ensure that cache-miss and cache-hit responses are guaranteed equivalent ([752962d](https://www.github.com/ehmpathy/with-simple-caching/commit/752962ddbab7db42f970bae121699f1e14477b84))
+* **types:** assert that the deserialization input and serialization output are notundefined ([d857348](https://www.github.com/ehmpathy/with-simple-caching/commit/d8573487267190beba4156ab9972077f7dc80c99))
+
 ### [0.9.5](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.9.4...v0.9.5) (2022-11-25)
 
 
