@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.11.1](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.11.0...v0.11.1) (2022-11-28)
+
+
+### Bug Fixes
+
+* **async:** ensure that the async caching wrapper uses same key serialization for its internal request deduplication cache ([608785d](https://www.github.com/ehmpathy/with-simple-caching/commit/608785d48627a87dd7618918f98352573fd6cecc))
+
 ## [0.11.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.10.1...v0.11.0) (2022-11-28)
 
 
