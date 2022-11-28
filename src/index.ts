@@ -9,3 +9,4 @@ export {
 export { WithSimpleCachingOptions, withSimpleCaching } from './logic/wrappers/withSimpleCaching';
 export { WithSimpleCachingAsyncOptions, withSimpleCachingAsync } from './logic/wrappers/withSimpleCachingAsync';
 export { withExtendableCaching, LogicWithExtendableCaching } from './logic/wrappers/withExtendableCaching';
+export { withExtendableCachingAsync, LogicWithExtendableCachingAsync } from './logic/wrappers/withExtendableCachingAsync';
