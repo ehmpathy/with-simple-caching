@@ -60,6 +60,7 @@
     "uuid": "^3.3.3"
   },
   "dependencies": {
+    "simple-in-memory-cache": "^0.3.0",
     "type-fns": "^0.6.0"
   }
 }

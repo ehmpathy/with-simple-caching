@@ -1,7 +1,9 @@
+import { createCache } from 'simple-in-memory-cache';
 import { isNotUndefined, NotUndefined } from 'type-fns';
 import { SimpleAsyncCache } from '../../domain/SimpleCache';
 import { getCacheFromCacheOption, WithSimpleCachingCacheOption } from '../options/getCacheFromCacheOption';
 import { defaultKeySerializationMethod, defaultValueSerializationMethod, KeySerializationMethod, noOp } from '../serde/defaults';
+import { withExtendableCaching } from './withExtendableCaching';
 
 /**
  * options to configure caching for use with-simple-caching
@@ -54,7 +56,8 @@ export const withSimpleCachingAsync = <
     secondsUntilExpiration,
   }: WithSimpleCachingAsyncOptions<L, C>,
 ): L => {
-  return ((async (...args: Parameters<L>): Promise<ReturnType<L>> => {
+  // add async caching to the logic
+  const logicWithAsyncCaching = async (...args: Parameters<L>): Promise<ReturnType<L>> => {
     // define key based on args the function was invoked with
     const key = serializeKey({ forInput: args });
 
@@ -87,5 +90,27 @@ export const withSimpleCachingAsync = <
       { key },
     );
     return output;
-  }) as any) as L;
+  };
+
+  // wrap the logic with extended sync caching, to ensure that duplicate requests resolve the same promise from in-memory (rather than each getting a promise to check the async cache + operate separately)
+  const { execute, invalidate } = withExtendableCaching(logicWithAsyncCaching, {
+    cache: createCache({
+      defaultSecondsUntilExpiration: 15 * 60, // support deduplicating requests that take up to 15 minutes to resolve, by default (note: we remove the promise as soon as it resolves through "serialize" method below)
+    }),
+  });
+
+  // define a function which the user will run which kicks off the result + invalidates the in-memory cache promise as soon as it finishes
+  const logicWithAsyncCachingAndInMemoryRequestDeduplication = async (...args: Parameters<L>): Promise<ReturnType<L>> => {
+    // start executing the request w/ async caching + sync caching
+    const promiseResult = execute(...args);
+
+    // ensure that after the promise resolves, we remove it from the cache (so that unique subsequent requests can still be made)
+    const promiseResultAfterInvalidation = promiseResult.finally(() => invalidate({ forInput: args })).then(() => promiseResult);
+
+    // return the result after invalidation
+    return promiseResultAfterInvalidation;
+  };
+
+  // return the function w/ async caching and sync-in-memory-request-deduplication
+  return logicWithAsyncCachingAndInMemoryRequestDeduplication as L;
 };
