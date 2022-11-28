@@ -57,7 +57,7 @@ export const withSimpleCachingAsync = <
   }: WithSimpleCachingAsyncOptions<L, C>,
 ): L => {
   // add async caching to the logic
-  const logicWithAsyncCaching = async (...args: Parameters<L>): Promise<ReturnType<L>> => {
+  const logicWithAsyncCaching = (async (...args: Parameters<L>): Promise<ReturnType<L>> => {
     // define key based on args the function was invoked with
     const key = serializeKey({ forInput: args });
 
@@ -90,13 +90,16 @@ export const withSimpleCachingAsync = <
       { key },
     );
     return output;
-  };
+  }) as L;
 
   // wrap the logic with extended sync caching, to ensure that duplicate requests resolve the same promise from in-memory (rather than each getting a promise to check the async cache + operate separately)
   const { execute, invalidate } = withExtendableCaching(logicWithAsyncCaching, {
     cache: createCache({
       defaultSecondsUntilExpiration: 15 * 60, // support deduplicating requests that take up to 15 minutes to resolve, by default (note: we remove the promise as soon as it resolves through "serialize" method below)
     }),
+    serialize: {
+      key: serializeKey,
+    },
   });
 
   // define a function which the user will run which kicks off the result + invalidates the in-memory cache promise as soon as it finishes

@@ -247,6 +247,37 @@ describe('withSimpleCachingAsync', () => {
       // check that "api" was called both times
       expect(apiCalls.length).toEqual(2);
     });
+    it('should use the same key serialization for the in-memory request deduplication cache', async () => {
+      // define an example fn
+      const apiCalls = [];
+      const callApi = withSimpleCachingAsync(
+        async ({ name }: { name: string; unserializableObject: any }) => {
+          apiCalls.push(name);
+          return name;
+        },
+        {
+          cache: createExampleAsyncCache().cache,
+          serialize: {
+            key: ({ forInput }) => forInput[0].name.slice(0, 1), // serialize to only the first letter of the name arg
+          },
+        },
+      );
+
+      // create an object that for sure cant be serialized
+      const objA = { name: 'dog', refs: undefined as any };
+      const objB = { name: 'cat', refs: objA };
+      objA.refs = objB; // creates a cyclical reference -> can't be serialized
+      try {
+        JSON.stringify(objA);
+        throw new Error('should not reach here');
+      } catch (error) {
+        if (!(error instanceof Error)) throw error;
+        expect(error.message).toContain('Converting circular structure to JSON');
+      }
+
+      // call the fn and prove that it didn't throw an error due to not being able to serialize the `unserializableObject` - it shouldn't have attempted since the custom serialization fn ignores it
+      await callApi({ name: 'casey', unserializableObject: objA }); // no error
+    });
   });
   describe('invalidation', () => {
     it('should consider the cached value as invalid if value resolved as undefined', async () => {
