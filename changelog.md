@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.11.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.10.1...v0.11.0) (2022-11-28)
+
+
+### Features
+
+* **async:** deduplicate parallel requests against async-cached logic in-memory w/ sync cache ([#23](https://www.github.com/ehmpathy/with-simple-caching/issues/23)) ([6526c3b](https://www.github.com/ehmpathy/with-simple-caching/commit/6526c3b12dfddb25eb7cbf07f3804cc2d8e5a496))
+* **sync:** add a sync with-extendable-caching method ([6a128cc](https://www.github.com/ehmpathy/with-simple-caching/commit/6a128ccac5f87810acfdb01402050b143a754779))
+
 ### [0.10.1](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.10.0...v0.10.1) (2022-11-25)
 
 
