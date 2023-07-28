@@ -1,7 +1,16 @@
 import { isNotUndefined, NotUndefined } from 'type-fns';
+
 import { SimpleSyncCache } from '../../domain/SimpleCache';
-import { getCacheFromCacheOption, WithSimpleCachingCacheOption } from '../options/getCacheFromCacheOption';
-import { defaultKeySerializationMethod, defaultValueSerializationMethod, KeySerializationMethod, noOp } from '../serde/defaults';
+import {
+  getCacheFromCacheOption,
+  WithSimpleCachingCacheOption,
+} from '../options/getCacheFromCacheOption';
+import {
+  defaultKeySerializationMethod,
+  defaultValueSerializationMethod,
+  KeySerializationMethod,
+  noOp,
+} from '../serde/defaults';
 
 /**
  * options to configure caching for use with-simple-caching
@@ -14,11 +23,16 @@ export interface WithSimpleCachingOptions<
   /**
    * the type of cache being used
    */
-  C extends SimpleSyncCache<any>
+  C extends SimpleSyncCache<any>,
 > {
   cache: WithSimpleCachingCacheOption<Parameters<L>, C>;
-  serialize?: { key?: KeySerializationMethod<Parameters<L>>; value?: (output: ReturnType<L>) => NotUndefined<ReturnType<C['get']>> };
-  deserialize?: { value?: (cached: NotUndefined<ReturnType<C['get']>>) => ReturnType<L> };
+  serialize?: {
+    key?: KeySerializationMethod<Parameters<L>>;
+    value?: (output: ReturnType<L>) => NotUndefined<ReturnType<C['get']>>;
+  };
+  deserialize?: {
+    value?: (cached: NotUndefined<ReturnType<C['get']>>) => ReturnType<L>;
+  };
   secondsUntilExpiration?: number;
 }
 
@@ -42,7 +56,7 @@ export const withSimpleCaching = <
   /**
    * the type of cache being used
    */
-  C extends SimpleSyncCache<any>
+  C extends SimpleSyncCache<any>,
 >(
   logic: L,
   {

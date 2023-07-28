@@ -3,11 +3,11 @@
 exports[`withExtendableCachingAsync invalidate should be able to invalidate a cached value by key when the cache is to be defined at runtime from inputs 1`] = `
 "BadRequestError: could not find the cache to invalidate in. invalidate was called forKey but the cache for this method was defined as a function which retrieves the cache from the input. therefore, since there is no input accessible, the cache should have been explicitly passed in on invalidate
 
-{\\"args\\":{\\"forKey\\":\\"andromeda\\"}}}"
+{"args":{"forKey":"andromeda"}}}"
 `;
 
 exports[`withExtendableCachingAsync update should be able to update a cached value by key when the cache is to be defined at runtime from inputs 1`] = `
 "BadRequestError: could not find the cache to update in. update was called forKey but the cache for this method was defined as a function which retrieves the cache from the input. therefore, since there is no input accessible, the cache should have been explicitly passed in on update
 
-{\\"args\\":{\\"forKey\\":\\"andromeda\\",\\"toValue\\":821}}}"
+{"args":{"forKey":"andromeda","toValue":821}}}"
 `;

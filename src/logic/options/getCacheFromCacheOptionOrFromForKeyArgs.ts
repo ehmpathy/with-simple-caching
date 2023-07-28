@@ -1,8 +1,15 @@
 import { isAFunction } from 'type-fns';
+
 import { SimpleCache } from '../../domain/SimpleCache';
 import { BadRequestError } from '../../utils/errors/BadRequestError';
-import { WithExtendableCachingTrigger, hasForInputProperty } from '../wrappers/withExtendableCachingAsync';
-import { getCacheFromCacheOption, WithSimpleCachingCacheOption } from './getCacheFromCacheOption';
+import {
+  WithExtendableCachingTrigger,
+  hasForInputProperty,
+} from '../wrappers/withExtendableCachingAsync';
+import {
+  getCacheFromCacheOption,
+  WithSimpleCachingCacheOption,
+} from './getCacheFromCacheOption';
 
 /**
  * a function which is capable of grabbing the cache from arguments to the `invalidate` or `update` commands, supporting both the case when invoked with `forInput` and when invoked with `forKey`
@@ -15,7 +22,7 @@ export const getCacheFromCacheOptionOrFromForKeyArgs = <
   /**
    * the type of cache being used
    */
-  C extends SimpleCache<any>
+  C extends SimpleCache<any>,
 >({
   args,
   options,
@@ -26,7 +33,11 @@ export const getCacheFromCacheOptionOrFromForKeyArgs = <
   trigger: WithExtendableCachingTrigger;
 }): C => {
   // if the args have the forInput property, then we can grab the cache like normal
-  if (hasForInputProperty(args)) return getCacheFromCacheOption({ forInput: args.forInput, cacheOption: options.cache });
+  if (hasForInputProperty(args))
+    return getCacheFromCacheOption({
+      forInput: args.forInput,
+      cacheOption: options.cache,
+    });
 
   // otherwise, if the cache was explicitly declared, then use it
   if (!isAFunction(options.cache)) return options.cache;

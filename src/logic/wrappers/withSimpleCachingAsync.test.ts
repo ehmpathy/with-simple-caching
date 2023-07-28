@@ -1,5 +1,8 @@
 import { SimpleAsyncCache } from '../..';
-import { createExampleAsyncCache, createExampleSyncCache } from '../../__test_assets__/createExampleCache';
+import {
+  createExampleAsyncCache,
+  createExampleSyncCache,
+} from '../../__test_assets__/createExampleCache';
 import { withSimpleCachingAsync } from './withSimpleCachingAsync';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -104,7 +107,9 @@ describe('withSimpleCachingAsync', () => {
 
       // check that the value in the cache is not the promise, but the value itself
       expect(typeof Promise.resolve(821)).toEqual('object'); // prove that a promise to resolve a number has a typeof object
-      expect(typeof store[JSON.stringify([{ name: 'casey' }])]?.value).toEqual('number'); // now prove that the value saved into the cache for this name is definetly not a promise
+      expect(typeof store[JSON.stringify([{ name: 'casey' }])]?.value).toEqual(
+        'number',
+      ); // now prove that the value saved into the cache for this name is definetly not a promise
     });
     it('should deduplicate parallel requests in memory even before async cache has finished resolving its first get', async () => {
       const store: Record<string, string | undefined> = {};
@@ -146,7 +151,9 @@ describe('withSimpleCachingAsync', () => {
 
       // check that the value in the cache is not the promise, but the value itself
       expect(typeof Promise.resolve(821)).toEqual('object'); // prove that a promise to resolve a number has a typeof object
-      expect(typeof store[JSON.stringify([{ name: 'casey' }])]).toEqual('number'); // now prove that the value saved into the cache for this name is definetly not a promise
+      expect(typeof store[JSON.stringify([{ name: 'casey' }])]).toEqual(
+        'number',
+      ); // now prove that the value saved into the cache for this name is definetly not a promise
     });
     it('should be possible to catch an error which was rejected by a promise set to the cache in an async cache which awaited the value onSet', async () => {
       const { cache, store } = createExampleAsyncCache();
@@ -170,7 +177,9 @@ describe('withSimpleCachingAsync', () => {
       }
 
       // prove that nothing was set to the cache
-      expect(typeof store[JSON.stringify([{ name: 'casey' }])]?.value).toEqual('undefined');
+      expect(typeof store[JSON.stringify([{ name: 'casey' }])]?.value).toEqual(
+        'undefined',
+      );
     });
     it('should have appropriate types for an async cache that caches awaited values', async () => {
       const { cache, store } = createExampleAsyncCache();
@@ -201,7 +210,9 @@ describe('withSimpleCachingAsync', () => {
 
       // check that the value in the cache is not the promise, but the value itself
       expect(typeof Promise.resolve(821)).toEqual('object'); // prove that a promise to resolve a number has a typeof object
-      expect(typeof store[JSON.stringify([{ name: 'casey' }])]?.value).toEqual('number'); // now prove that the value saved into the cache for this name is definetly not a promise
+      expect(typeof store[JSON.stringify([{ name: 'casey' }])]?.value).toEqual(
+        'number',
+      ); // now prove that the value saved into the cache for this name is definetly not a promise
     });
   });
   describe('(de)serialization', () => {
@@ -249,7 +260,8 @@ describe('withSimpleCachingAsync', () => {
           cache: {
             get: async (key: string) => store[key], // never returns a response, so everyone runs against "set"
             set: async (key: string, value: string) => {
-              if (typeof value !== 'string') throw new Error('value was not a string');
+              if (typeof value !== 'string')
+                throw new Error('value was not a string');
               store[key] = value;
             },
           },
@@ -288,7 +300,8 @@ describe('withSimpleCachingAsync', () => {
           cache: {
             get: async (key: string) => store[key], // never returns a response, so everyone runs against "set"
             set: async (key: string, value: string) => {
-              if (typeof value !== 'string') throw new Error('value was not a string');
+              if (typeof value !== 'string')
+                throw new Error('value was not a string');
               store[key] = value;
             },
           },
@@ -341,7 +354,9 @@ describe('withSimpleCachingAsync', () => {
         throw new Error('should not reach here');
       } catch (error) {
         if (!(error instanceof Error)) throw error;
-        expect(error.message).toContain('Converting circular structure to JSON');
+        expect(error.message).toContain(
+          'Converting circular structure to JSON',
+        );
       }
 
       // call the fn and prove that it didn't throw an error due to not being able to serialize the `unserializableObject` - it shouldn't have attempted since the custom serialization fn ignores it
@@ -460,7 +475,9 @@ describe('withSimpleCachingAsync', () => {
       await callApi();
 
       // confirm that it passed the secondsUntilExpiration through to the cache
-      expect(store['[]']).toMatchObject({ options: { secondsUntilExpiration: 3 } });
+      expect(store['[]']).toMatchObject({
+        options: { secondsUntilExpiration: 3 },
+      });
     });
   });
 });

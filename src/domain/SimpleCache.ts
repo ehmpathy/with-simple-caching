@@ -3,7 +3,11 @@
  */
 export interface SimpleSyncCache<T> {
   get: (key: string) => T | undefined;
-  set: (key: string, value: T | undefined, options?: { secondsUntilExpiration?: number }) => void;
+  set: (
+    key: string,
+    value: T | undefined,
+    options?: { secondsUntilExpiration?: number },
+  ) => void;
 }
 
 /**
@@ -11,7 +15,11 @@ export interface SimpleSyncCache<T> {
  */
 export interface SimpleAsyncCache<T> {
   get: (key: string) => Promise<T | undefined>;
-  set: (key: string, value: T | undefined, options?: { secondsUntilExpiration?: number }) => Promise<void>;
+  set: (
+    key: string,
+    value: T | undefined,
+    options?: { secondsUntilExpiration?: number },
+  ) => Promise<void>;
 }
 
 /**
