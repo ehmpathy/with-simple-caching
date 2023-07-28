@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.11.2](https://github.com/ehmpathy/with-simple-caching/compare/v0.11.1...v0.11.2) (2023-07-28)
+
+
+### Bug Fixes
+
+* **async:** enable async caching wrapper to use a sync cache ([#26](https://github.com/ehmpathy/with-simple-caching/issues/26)) ([6138a92](https://github.com/ehmpathy/with-simple-caching/commit/6138a9212924e9d2355fe93bbe0c9151b0f23789))
+* **practs:** use latest best practices ([#27](https://github.com/ehmpathy/with-simple-caching/issues/27)) ([4f6a144](https://github.com/ehmpathy/with-simple-caching/commit/4f6a144020525c2a5a091c764a4b4110d676b0de))
+
 ### [0.11.1](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.11.0...v0.11.1) (2022-11-28)
 
 
