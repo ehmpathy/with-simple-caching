@@ -1,6 +1,6 @@
 import { createCache } from 'simple-in-memory-cache';
 import { isNotUndefined, NotUndefined } from 'type-fns';
-import { SimpleAsyncCache } from '../../domain/SimpleCache';
+import { SimpleCache } from '../../domain/SimpleCache';
 import { getCacheFromCacheOption, WithSimpleCachingCacheOption } from '../options/getCacheFromCacheOption';
 import { defaultKeySerializationMethod, defaultValueSerializationMethod, KeySerializationMethod, noOp } from '../serde/defaults';
 import { withExtendableCaching } from './withExtendableCaching';
@@ -16,7 +16,7 @@ export interface WithSimpleCachingAsyncOptions<
   /**
    * the type of cache being used
    */
-  C extends SimpleAsyncCache<any>
+  C extends SimpleCache<any>
 > {
   cache: WithSimpleCachingCacheOption<Parameters<L>, C>;
   serialize?: {
@@ -34,6 +34,7 @@ export interface WithSimpleCachingAsyncOptions<
  *
  * note
  * - utilizes an additional in-memory synchronous cache under the hood to prevent duplicate requests (otherwise, while async cache is resolving, a duplicate parallel request may have be made)
+ * - can be given a synchronous cache, since what you can do on an asynchronous cache you can do on a synchronous cache, but not the other way around
  */
 export const withSimpleCachingAsync = <
   /**
@@ -43,7 +44,7 @@ export const withSimpleCachingAsync = <
   /**
    * the type of cache being used
    */
-  C extends SimpleAsyncCache<any>
+  C extends SimpleCache<any>
 >(
   logic: L,
   {
