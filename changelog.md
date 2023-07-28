@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.3](https://github.com/ehmpathy/with-simple-caching/compare/v0.11.2...v0.11.3) (2023-07-28)
+
+
+### Bug Fixes
+
+* **cicd:** remove publish-on-tag in favor of publish ([52581fa](https://github.com/ehmpathy/with-simple-caching/commit/52581fac00a07c2dd9d150138e206a42a9789aa3))
+
 ## [0.11.2](https://github.com/ehmpathy/with-simple-caching/compare/v0.11.1...v0.11.2) (2023-07-28)
 
 
