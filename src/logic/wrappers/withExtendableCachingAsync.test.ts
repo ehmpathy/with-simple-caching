@@ -1,7 +1,7 @@
-import { BadRequestError } from '../../utils/errors/BadRequestError';
-import { withExtendableCachingAsync } from './withExtendableCachingAsync';
 import { createExampleAsyncCache } from '../../__test_assets__/createExampleCache';
 import { SimpleAsyncCache } from '../../domain/SimpleCache';
+import { BadRequestError } from '../../utils/errors/BadRequestError';
+import { withExtendableCachingAsync } from './withExtendableCachingAsync';
 
 describe('withExtendableCachingAsync', () => {
   describe('execute', () => {
@@ -87,7 +87,9 @@ describe('withExtendableCachingAsync', () => {
       expect(apiCalls.length).toEqual(2);
 
       // invalidate the cached value for one of the inputs
-      await callApi.invalidate({ forKey: JSON.stringify([{ galaxy: 'andromeda' }]) });
+      await callApi.invalidate({
+        forKey: JSON.stringify([{ galaxy: 'andromeda' }]),
+      });
 
       // now call the cache again for that invalidated value, and prove it called the api again
       const result5 = await callApi.execute({ galaxy: 'andromeda' });
@@ -99,7 +101,10 @@ describe('withExtendableCachingAsync', () => {
       const { cache } = createExampleAsyncCache<string>();
       const apiCalls = [];
       const callApi = withExtendableCachingAsync(
-        async ({ galaxy }: { galaxy: string }, _: { cache: SimpleAsyncCache<string> }) => {
+        async (
+          { galaxy }: { galaxy: string },
+          _: { cache: SimpleAsyncCache<string> },
+        ) => {
           apiCalls.push(galaxy);
           return Math.random();
         },
@@ -130,8 +135,11 @@ describe('withExtendableCachingAsync', () => {
         throw new Error('should not reach here');
       } catch (error) {
         expect(error).toBeInstanceOf(BadRequestError);
-        if (!(error instanceof BadRequestError)) throw new Error('error should have been instance of BadRequestError'); // satisfy typescript defs
-        expect(error.message).toContain('could not find the cache to invalidate');
+        if (!(error instanceof BadRequestError))
+          throw new Error('error should have been instance of BadRequestError'); // satisfy typescript defs
+        expect(error.message).toContain(
+          'could not find the cache to invalidate',
+        );
         expect(error.message).toMatchSnapshot();
       }
 
@@ -170,7 +178,10 @@ describe('withExtendableCachingAsync', () => {
       expect(apiCalls.length).toEqual(2);
 
       // update the cached value for one of the inputs
-      await callApi.update({ forInput: [{ galaxy: 'andromeda' }], toValue: 821 });
+      await callApi.update({
+        forInput: [{ galaxy: 'andromeda' }],
+        toValue: 821,
+      });
 
       // now call the cache again
       const result5 = await callApi.execute({ galaxy: 'andromeda' });
@@ -207,7 +218,10 @@ describe('withExtendableCachingAsync', () => {
       expect(apiCalls.length).toEqual(2);
 
       // update the cached value for one of the inputs
-      await callApi.update({ forKey: JSON.stringify([{ galaxy: 'andromeda' }]), toValue: 821 });
+      await callApi.update({
+        forKey: JSON.stringify([{ galaxy: 'andromeda' }]),
+        toValue: 821,
+      });
 
       // now call the cache again
       const result5 = await callApi.execute({ galaxy: 'andromeda' });
@@ -224,7 +238,10 @@ describe('withExtendableCachingAsync', () => {
       const { cache } = createExampleAsyncCache<string>();
       const apiCalls = [];
       const callApi = withExtendableCachingAsync(
-        async ({ galaxy }: { galaxy: string }, _: { cache: SimpleAsyncCache<string> }) => {
+        async (
+          { galaxy }: { galaxy: string },
+          _: { cache: SimpleAsyncCache<string> },
+        ) => {
           apiCalls.push(galaxy);
           return Math.random();
         },
@@ -255,7 +272,8 @@ describe('withExtendableCachingAsync', () => {
         throw new Error('should not reach here');
       } catch (error) {
         expect(error).toBeInstanceOf(BadRequestError);
-        if (!(error instanceof BadRequestError)) throw new Error('error should have been instance of BadRequestError'); // satisfy typescript defs
+        if (!(error instanceof BadRequestError))
+          throw new Error('error should have been instance of BadRequestError'); // satisfy typescript defs
         expect(error.message).toContain('could not find the cache to update');
         expect(error.message).toMatchSnapshot();
       }
@@ -298,7 +316,10 @@ describe('withExtendableCachingAsync', () => {
       expect(apiCalls.length).toEqual(2);
 
       // update the cached value for one of the inputs
-      await callApi.update({ forInput: [{ galaxy: 'andromeda' }], toValue: ({ fromCachedOutput }) => (fromCachedOutput ?? 0) * 2 });
+      await callApi.update({
+        forInput: [{ galaxy: 'andromeda' }],
+        toValue: ({ fromCachedOutput }) => (fromCachedOutput ?? 0) * 2,
+      });
 
       // now call the cache again
       const result5 = await callApi.execute({ galaxy: 'andromeda' });

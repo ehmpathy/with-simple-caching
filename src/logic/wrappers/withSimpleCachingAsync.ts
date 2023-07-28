@@ -1,8 +1,17 @@
 import { createCache } from 'simple-in-memory-cache';
 import { isNotUndefined, NotUndefined } from 'type-fns';
+
 import { SimpleCache } from '../../domain/SimpleCache';
-import { getCacheFromCacheOption, WithSimpleCachingCacheOption } from '../options/getCacheFromCacheOption';
-import { defaultKeySerializationMethod, defaultValueSerializationMethod, KeySerializationMethod, noOp } from '../serde/defaults';
+import {
+  getCacheFromCacheOption,
+  WithSimpleCachingCacheOption,
+} from '../options/getCacheFromCacheOption';
+import {
+  defaultKeySerializationMethod,
+  defaultValueSerializationMethod,
+  KeySerializationMethod,
+  noOp,
+} from '../serde/defaults';
 import { withExtendableCaching } from './withExtendableCaching';
 
 /**
@@ -16,15 +25,19 @@ export interface WithSimpleCachingAsyncOptions<
   /**
    * the type of cache being used
    */
-  C extends SimpleCache<any>
+  C extends SimpleCache<any>,
 > {
   cache: WithSimpleCachingCacheOption<Parameters<L>, C>;
   serialize?: {
     key?: KeySerializationMethod<Parameters<L>>;
-    value?: (output: Awaited<ReturnType<L>>) => NotUndefined<Awaited<ReturnType<C['get']>>>;
+    value?: (
+      output: Awaited<ReturnType<L>>,
+    ) => NotUndefined<Awaited<ReturnType<C['get']>>>;
   };
   deserialize?: {
-    value?: (cached: NotUndefined<Awaited<ReturnType<C['get']>>>) => Awaited<ReturnType<L>>;
+    value?: (
+      cached: NotUndefined<Awaited<ReturnType<C['get']>>>,
+    ) => Awaited<ReturnType<L>>;
   };
   secondsUntilExpiration?: number;
 }
@@ -44,7 +57,7 @@ export const withSimpleCachingAsync = <
   /**
    * the type of cache being used
    */
-  C extends SimpleCache<any>
+  C extends SimpleCache<any>,
 >(
   logic: L,
   {
@@ -58,7 +71,9 @@ export const withSimpleCachingAsync = <
   }: WithSimpleCachingAsyncOptions<L, C>,
 ): L => {
   // add async caching to the logic
-  const logicWithAsyncCaching = (async (...args: Parameters<L>): Promise<ReturnType<L>> => {
+  const logicWithAsyncCaching = (async (
+    ...args: Parameters<L>
+  ): Promise<ReturnType<L>> => {
     // define key based on args the function was invoked with
     const key = serializeKey({ forInput: args });
 
@@ -104,12 +119,16 @@ export const withSimpleCachingAsync = <
   });
 
   // define a function which the user will run which kicks off the result + invalidates the in-memory cache promise as soon as it finishes
-  const logicWithAsyncCachingAndInMemoryRequestDeduplication = async (...args: Parameters<L>): Promise<ReturnType<L>> => {
+  const logicWithAsyncCachingAndInMemoryRequestDeduplication = async (
+    ...args: Parameters<L>
+  ): Promise<ReturnType<L>> => {
     // start executing the request w/ async caching + sync caching
     const promiseResult = execute(...args);
 
     // ensure that after the promise resolves, we remove it from the cache (so that unique subsequent requests can still be made)
-    const promiseResultAfterInvalidation = promiseResult.finally(() => invalidate({ forInput: args })).then(() => promiseResult);
+    const promiseResultAfterInvalidation = promiseResult
+      .finally(() => invalidate({ forInput: args }))
+      .then(() => promiseResult);
 
     // return the result after invalidation
     return promiseResultAfterInvalidation;

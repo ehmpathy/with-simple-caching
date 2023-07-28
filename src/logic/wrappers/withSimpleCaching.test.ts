@@ -1,5 +1,5 @@
-import { withSimpleCaching } from './withSimpleCaching';
 import { createExampleSyncCache } from '../../__test_assets__/createExampleCache';
+import { withSimpleCaching } from './withSimpleCaching';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -187,7 +187,8 @@ describe('withSimpleCaching', () => {
           cache: {
             get: (key: string) => store[key], // never returns a response, so everyone runs against "set"
             set: (key: string, value: string) => {
-              if (typeof value !== 'string') throw new Error('value was not a string');
+              if (typeof value !== 'string')
+                throw new Error('value was not a string');
               store[key] = value;
             },
           },
@@ -226,7 +227,8 @@ describe('withSimpleCaching', () => {
           cache: {
             get: (key: string) => store[key], // never returns a response, so everyone runs against "set"
             set: (key: string, value: string) => {
-              if (typeof value !== 'string') throw new Error('value was not a string');
+              if (typeof value !== 'string')
+                throw new Error('value was not a string');
               store[key] = value;
             },
           },
@@ -367,7 +369,9 @@ describe('withSimpleCaching', () => {
       callApi();
 
       // confirm that it passed the secondsUntilExpiration through to the cache
-      expect(store['[]']).toMatchObject({ options: { secondsUntilExpiration: 3 } });
+      expect(store['[]']).toMatchObject({
+        options: { secondsUntilExpiration: 3 },
+      });
     });
   });
 });
