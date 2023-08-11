@@ -1,4 +1,4 @@
-import { createCache } from 'simple-in-memory-cache';
+import { createCache, SimpleInMemoryCache } from 'simple-in-memory-cache';
 import { isNotUndefined, NotUndefined } from 'type-fns';
 
 import { SimpleCache } from '../../domain/SimpleCache';
@@ -14,6 +14,8 @@ import {
 } from '../serde/defaults';
 import { withExtendableCaching } from './withExtendableCaching';
 
+export type AsyncLogic = (...args: any[]) => Promise<any>;
+
 /**
  * options to configure caching for use with-simple-caching
  */
@@ -21,13 +23,34 @@ export interface WithSimpleCachingAsyncOptions<
   /**
    * the logic we are caching the responses for
    */
-  L extends (...args: any) => any,
+  L extends AsyncLogic,
   /**
    * the type of cache being used
    */
   C extends SimpleCache<any>,
 > {
-  cache: WithSimpleCachingCacheOption<Parameters<L>, C>;
+  /**
+   * the cache to persist outputs
+   */
+  cache:
+    | WithSimpleCachingCacheOption<Parameters<L>, C>
+    | {
+        /**
+         * the cache to cache output to
+         */
+        output: WithSimpleCachingCacheOption<Parameters<L>, C>;
+
+        /**
+         * the cache to use for parallel in memory request deduplication
+         *
+         * note
+         * - by default, this method will use its own in-memory cache for deduplication
+         * - if required, you can pass in your own in-memory cache to use
+         *   - for example, if you're instantiating the wrapper on each execution of your logic, instead of globally
+         *   - important: if passing in your own, make sure that the cache time is at least as long as your longest resolving promise (e.g., 15min) ⚠️
+         */
+        deduplication: SimpleInMemoryCache<any>;
+      };
   serialize?: {
     key?: KeySerializationMethod<Parameters<L>>;
     value?: (
@@ -43,6 +66,44 @@ export interface WithSimpleCachingAsyncOptions<
 }
 
 /**
+ * method to get the output cache option chosen by the user from the cache input
+ */
+export const getOutputCacheOptionFromCacheInput = <
+  /**
+   * the logic we are caching the responses for
+   */
+  L extends AsyncLogic,
+  /**
+   * the type of cache being used
+   */
+  C extends SimpleCache<any>,
+>(
+  cacheInput: WithSimpleCachingAsyncOptions<L, C>['cache'],
+): WithSimpleCachingCacheOption<Parameters<L>, C> =>
+  'output' in cacheInput ? cacheInput.output : cacheInput;
+
+/**
+ * method to get the output cache option chosen by the user from the cache input
+ */
+const getDeduplicationCacheOptionFromCacheInput = <
+  /**
+   * the logic we are caching the responses for
+   */
+  L extends AsyncLogic,
+  /**
+   * the type of cache being used
+   */
+  C extends SimpleCache<any>,
+>(
+  cacheInput: WithSimpleCachingAsyncOptions<L, C>['cache'],
+): SimpleInMemoryCache<any> =>
+  'deduplication' in cacheInput
+    ? cacheInput.deduplication
+    : createCache({
+        defaultSecondsUntilExpiration: 15 * 60, // support deduplicating requests that take up to 15 minutes to resolve, by default (note: we remove the promise as soon as it resolves through "serialize" method below)
+      });
+
+/**
  * a wrapper which adds asynchronous caching to asynchronous logic
  *
  * note
@@ -53,7 +114,7 @@ export const withSimpleCachingAsync = <
   /**
    * the logic we are caching the responses for
    */
-  L extends (...args: any[]) => Promise<any>,
+  L extends AsyncLogic,
   /**
    * the type of cache being used
    */
@@ -78,7 +139,10 @@ export const withSimpleCachingAsync = <
     const key = serializeKey({ forInput: args });
 
     // define cache based on options
-    const cache = getCacheFromCacheOption({ forInput: args, cacheOption });
+    const cache = getCacheFromCacheOption({
+      forInput: args,
+      cacheOption: getOutputCacheOptionFromCacheInput(cacheOption),
+    });
 
     // see if its already cached
     const cachedValue: Awaited<ReturnType<C['get']>> = await cache.get(key);
@@ -110,9 +174,7 @@ export const withSimpleCachingAsync = <
 
   // wrap the logic with extended sync caching, to ensure that duplicate requests resolve the same promise from in-memory (rather than each getting a promise to check the async cache + operate separately)
   const { execute, invalidate } = withExtendableCaching(logicWithAsyncCaching, {
-    cache: createCache({
-      defaultSecondsUntilExpiration: 15 * 60, // support deduplicating requests that take up to 15 minutes to resolve, by default (note: we remove the promise as soon as it resolves through "serialize" method below)
-    }),
+    cache: getDeduplicationCacheOptionFromCacheInput(cacheOption),
     serialize: {
       key: serializeKey,
     },

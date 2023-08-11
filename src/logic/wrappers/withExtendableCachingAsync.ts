@@ -8,6 +8,7 @@ import {
   defaultValueSerializationMethod,
 } from '../serde/defaults';
 import {
+  getOutputCacheOptionFromCacheInput,
   withSimpleCachingAsync,
   WithSimpleCachingAsyncOptions,
 } from './withSimpleCachingAsync';
@@ -154,7 +155,7 @@ export const withExtendableCachingAsync = <
     // define how to get the cache, with support for `forKey` input instead of full input
     const cache = getCacheFromCacheOptionOrFromForKeyArgs({
       args,
-      options,
+      options: { cache: getOutputCacheOptionFromCacheInput(options.cache) },
       trigger: WithExtendableCachingTrigger.INVALIDATE,
     });
 
@@ -175,7 +176,7 @@ export const withExtendableCachingAsync = <
     // define how to get the cache, with support for `forKey` input instead of full input
     const cache = getCacheFromCacheOptionOrFromForKeyArgs({
       args,
-      options,
+      options: { cache: getOutputCacheOptionFromCacheInput(options.cache) },
       trigger: WithExtendableCachingTrigger.UPDATE,
     });
 
