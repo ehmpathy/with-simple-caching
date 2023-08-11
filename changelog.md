@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.4](https://github.com/ehmpathy/with-simple-caching/compare/v0.11.3...v0.11.4) (2023-08-11)
+
+
+### Bug Fixes
+
+* **async:** enable deduplication cache input to with-async-cache ([2f8ad46](https://github.com/ehmpathy/with-simple-caching/commit/2f8ad4625107704acb6070fa77b5909221ca4231))
+
 ## [0.11.3](https://github.com/ehmpathy/with-simple-caching/compare/v0.11.2...v0.11.3) (2023-07-28)
 
 
