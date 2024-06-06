@@ -8,6 +8,8 @@ import {
 } from '../options/getCacheFromCacheOption';
 import {
   defaultKeySerializationMethod,
+  defaultShouldBypassGetMethod,
+  defaultShouldBypassSetMethod,
   defaultValueSerializationMethod,
   KeySerializationMethod,
   noOp,
@@ -63,6 +65,33 @@ export interface WithSimpleCachingAsyncOptions<
     ) => Awaited<ReturnType<L>>;
   };
   secondsUntilExpiration?: number;
+
+  /**
+   * whether to bypass the cached for either the set or get operation
+   */
+  bypass?: {
+    /**
+     * whether to bypass the cache for the get
+     *
+     * note
+     * - equivalent to the result not already being cached
+     *
+     * default
+     * - process.env.CACHE_BYPASS_GET ? process.env.CACHE_BYPASS_GET === 'true' : process.env.CACHE_BYPASS === 'true'
+     */
+    get?: (input: Parameters<L>) => boolean;
+
+    /**
+     * whether to bypass the cache for the set
+     *
+     * note
+     * - keeps whatever the previously cached value was, while returning the new value
+     *
+     * default
+     * - process.env.CACHE_BYPASS_SET ? process.env.CACHE_BYPASS_SET === 'true' : process.env.CACHE_BYPASS === 'true'
+     */
+    set?: (input: Parameters<L>) => boolean;
+  };
 }
 
 /**
@@ -129,6 +158,10 @@ export const withSimpleCachingAsync = <
     } = {},
     deserialize: { value: deserializeValue = noOp } = {},
     secondsUntilExpiration,
+    bypass = {
+      get: defaultShouldBypassGetMethod,
+      set: defaultShouldBypassSetMethod,
+    },
   }: WithSimpleCachingAsyncOptions<L, C>,
 ): L => {
   // add async caching to the logic
@@ -145,11 +178,16 @@ export const withSimpleCachingAsync = <
     });
 
     // see if its already cached
-    const cachedValue: Awaited<ReturnType<C['get']>> = await cache.get(key);
+    const cachedValue: Awaited<ReturnType<C['get']>> = bypass.get?.(args)
+      ? undefined
+      : await cache.get(key);
     if (isNotUndefined(cachedValue)) return deserializeValue(cachedValue); // if already cached, return it immediately
 
     // if its not, grab the output from the logic
     const output: Awaited<ReturnType<L>> = await logic(...args);
+
+    // if was asked to bypass cache.set, we can return the output now
+    if (bypass.set?.(args)) return output;
 
     // set the output to the cache
     const serializedOutput = serializeValue(output);

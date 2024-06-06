@@ -7,6 +7,8 @@ import {
 } from '../options/getCacheFromCacheOption';
 import {
   defaultKeySerializationMethod,
+  defaultShouldBypassGetMethod,
+  defaultShouldBypassSetMethod,
   defaultValueSerializationMethod,
   KeySerializationMethod,
   noOp,
@@ -34,6 +36,33 @@ export interface WithSimpleCachingOptions<
     value?: (cached: NotUndefined<ReturnType<C['get']>>) => ReturnType<L>;
   };
   secondsUntilExpiration?: number;
+
+  /**
+   * whether to bypass the cached for either the set or get operation
+   */
+  bypass?: {
+    /**
+     * whether to bypass the cache for the get
+     *
+     * note
+     * - equivalent to the result not already being cached
+     *
+     * default
+     * - process.env.CACHE_BYPASS_GET ? process.env.CACHE_BYPASS_GET === 'true' : process.env.CACHE_BYPASS === 'true'
+     */
+    get?: (input: Parameters<L>) => boolean;
+
+    /**
+     * whether to bypass the cache for the set
+     *
+     * note
+     * - keeps whatever the previously cached value was, while returning the new value
+     *
+     * default
+     * - process.env.CACHE_BYPASS_SET ? process.env.CACHE_BYPASS_SET === 'true' : process.env.CACHE_BYPASS === 'true'
+     */
+    set?: (input: Parameters<L>) => boolean;
+  };
 }
 
 /**
@@ -69,6 +98,10 @@ export const withSimpleCaching = <
       value: deserializeValue = noOp, // default deserialize value to noOp
     } = {},
     secondsUntilExpiration,
+    bypass = {
+      get: defaultShouldBypassGetMethod,
+      set: defaultShouldBypassSetMethod,
+    },
   }: WithSimpleCachingOptions<L, C>,
 ): L => {
   return ((...args: Parameters<L>): ReturnType<L> => {
@@ -79,11 +112,16 @@ export const withSimpleCaching = <
     const cache = getCacheFromCacheOption({ forInput: args, cacheOption });
 
     // see if its already cached
-    const cachedValue: ReturnType<C['get']> = cache.get(key);
+    const cachedValue: ReturnType<C['get']> = bypass.get?.(args)
+      ? undefined
+      : cache.get(key);
     if (isNotUndefined(cachedValue)) return deserializeValue(cachedValue); // if already cached, return it immediately
 
     // if its not, grab the output from the logic
     const output: ReturnType<L> = logic(...args);
+
+    // if was asked to bypass cache.set, we can return the output now
+    if (bypass.set?.(args)) return output;
 
     // set the output to the cache
     const serializedOutput = serializeValue(output);
