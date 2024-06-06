@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/ehmpathy/with-simple-caching/compare/v0.11.4...v0.12.0) (2024-06-06)
+
+
+### Features
+
+* **bypass:** enable bypass of cache.set or cache.get via input or env ([677a950](https://github.com/ehmpathy/with-simple-caching/commit/677a950107b5db687f33996c1fb22e8e4a338ab0))
+
 ## [0.11.4](https://github.com/ehmpathy/with-simple-caching/compare/v0.11.3...v0.11.4) (2023-08-11)
 
 
