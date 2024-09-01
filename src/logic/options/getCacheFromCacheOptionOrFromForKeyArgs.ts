@@ -1,3 +1,4 @@
+import { SimpleInMemoryCache } from 'simple-in-memory-cache';
 import { isAFunction } from 'type-fns';
 
 import { SimpleCache } from '../../domain/SimpleCache';
@@ -29,9 +30,13 @@ export const getCacheFromCacheOptionOrFromForKeyArgs = <
   trigger,
 }: {
   args: { forKey: string; cache?: C } | { forInput: Parameters<L> };
-  options: { cache: WithSimpleCachingCacheOption<Parameters<L>, C> };
+  options: {
+    cache:
+      | WithSimpleCachingCacheOption<Parameters<L>, C> // for the output.cache
+      | WithSimpleCachingCacheOption<Parameters<L>, SimpleInMemoryCache<any>>; // for the dedupe.cache
+  };
   trigger: WithExtendableCachingTrigger;
-}): C => {
+}): C | SimpleInMemoryCache<any> => {
   // if the args have the forInput property, then we can grab the cache like normal
   if (hasForInputProperty(args))
     return getCacheFromCacheOption({

@@ -7,6 +7,8 @@ import {
 } from '../../__test_assets__/createExampleCache';
 import { withSimpleCachingAsync } from './withSimpleCachingAsync';
 
+jest.setTimeout(60 * 1000);
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('withSimpleCachingAsync', () => {
@@ -527,6 +529,59 @@ describe('withSimpleCachingAsync', () => {
       expect(store['[]']).toMatchObject({
         options: { secondsUntilExpiration: 3 },
       });
+    });
+  });
+  describe('performance', () => {
+    it('should prevent redundant async-cache.gets, to avoid expensive disk.read/api.call latencies, in favor of in-memory-cache.gets', async () => {
+      const store: Record<string, string | undefined> = {};
+      const diskReads = [];
+      const cache: SimpleAsyncCache<string> = {
+        set: async (key: string, value: string | undefined) => {
+          store[key] = value;
+        },
+        get: async (key: string) => {
+          diskReads.push(key);
+          await sleep(1500); // act like it takes a while for the cache to resolve => async cache reads are typically expensive
+          return store[key];
+        },
+      };
+
+      // define an example fn
+      const apiCalls = [];
+      const deduplicationCache = createCache();
+      const callApi = (args: { name: string }) =>
+        // note that this function instantiates a new wrapper each time -> requiring the deduplication cache to be passed in
+        withSimpleCachingAsync(
+          async ({ name }: { name: string }) => {
+            apiCalls.push(name);
+            await sleep(100);
+            return Math.random();
+          },
+          { cache: { output: cache, deduplication: deduplicationCache } },
+        )(args);
+
+      // call the fn a few times, in sequence
+      await callApi({ name: 'casey' });
+      await callApi({ name: 'katya' });
+      await callApi({ name: 'sonya' });
+      await callApi({ name: 'casey' });
+      await callApi({ name: 'katya' });
+      await callApi({ name: 'sonya' });
+      await callApi({ name: 'casey' });
+      await callApi({ name: 'katya' });
+      await callApi({ name: 'sonya' });
+      await callApi({ name: 'casey' });
+      await callApi({ name: 'katya' });
+      await callApi({ name: 'sonya' });
+      await callApi({ name: 'casey' });
+      await callApi({ name: 'katya' });
+      await callApi({ name: 'sonya' });
+
+      // check that "api" was only called thrice (once per name)
+      expect(apiCalls.length).toEqual(3);
+
+      // check that the disk was only read from 3*2 (2x per name, since initial cache.miss results in 2 gets), to prevent redundant disk reads that needlessly add latency; after first disk.get, we can subsequently .get from memory
+      expect(diskReads.length).toEqual(6);
     });
   });
 });

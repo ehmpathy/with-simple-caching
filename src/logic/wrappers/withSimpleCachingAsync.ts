@@ -14,7 +14,7 @@ import {
   KeySerializationMethod,
   noOp,
 } from '../serde/defaults';
-import { withExtendableCaching } from './withExtendableCaching';
+import { withSimpleCaching } from './withSimpleCaching';
 
 export type AsyncLogic = (...args: any[]) => Promise<any>;
 
@@ -114,7 +114,7 @@ export const getOutputCacheOptionFromCacheInput = <
 /**
  * method to get the output cache option chosen by the user from the cache input
  */
-const getDeduplicationCacheOptionFromCacheInput = <
+export const getDedupeCacheOptionFromCacheInput = <
   /**
    * the logic we are caching the responses for
    */
@@ -125,11 +125,11 @@ const getDeduplicationCacheOptionFromCacheInput = <
   C extends SimpleCache<any>,
 >(
   cacheInput: WithSimpleCachingAsyncOptions<L, C>['cache'],
-): SimpleInMemoryCache<any> =>
+): WithSimpleCachingCacheOption<Parameters<L>, SimpleInMemoryCache<any>> =>
   'deduplication' in cacheInput
     ? cacheInput.deduplication
     : createCache({
-        defaultSecondsUntilExpiration: 15 * 60, // support deduplicating requests that take up to 15 minutes to resolve, by default (note: we remove the promise as soon as it resolves through "serialize" method below)
+        defaultSecondsUntilExpiration: 60, // todo: define the default expiration seconds based on output cache default expiration seconds
       });
 
 /**
@@ -210,29 +210,14 @@ export const withSimpleCachingAsync = <
     return output;
   }) as L;
 
-  // wrap the logic with extended sync caching, to ensure that duplicate requests resolve the same promise from in-memory (rather than each getting a promise to check the async cache + operate separately)
-  const { execute, invalidate } = withExtendableCaching(logicWithAsyncCaching, {
-    cache: getDeduplicationCacheOptionFromCacheInput(cacheOption),
-    serialize: {
-      key: serializeKey,
-    },
-  });
-
-  // define a function which the user will run which kicks off the result + invalidates the in-memory cache promise as soon as it finishes
-  const logicWithAsyncCachingAndInMemoryRequestDeduplication = async (
-    ...args: Parameters<L>
-  ): Promise<ReturnType<L>> => {
-    // start executing the request w/ async caching + sync caching
-    const promiseResult = execute(...args);
-
-    // ensure that after the promise resolves, we remove it from the cache (so that unique subsequent requests can still be made)
-    const promiseResultAfterInvalidation = promiseResult
-      .finally(() => invalidate({ forInput: args }))
-      .then(() => promiseResult);
-
-    // return the result after invalidation
-    return promiseResultAfterInvalidation;
-  };
+  // define a function which the user will run which kicks off the result
+  const logicWithAsyncCachingAndInMemoryRequestDeduplication =
+    withSimpleCaching(logicWithAsyncCaching, {
+      cache: getDedupeCacheOptionFromCacheInput(cacheOption),
+      serialize: {
+        key: serializeKey,
+      },
+    });
 
   // return the function w/ async caching and sync-in-memory-request-deduplication
   return logicWithAsyncCachingAndInMemoryRequestDeduplication as L;

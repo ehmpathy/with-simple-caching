@@ -8,6 +8,7 @@ import {
   defaultValueSerializationMethod,
 } from '../serde/defaults';
 import {
+  getDedupeCacheOptionFromCacheInput,
   getOutputCacheOptionFromCacheInput,
   withSimpleCachingAsync,
   WithSimpleCachingAsyncOptions,
@@ -152,10 +153,19 @@ export const withExtendableCachingAsync = <
     L,
     C
   >['invalidate'] = async (args) => {
-    // define how to get the cache, with support for `forKey` input instead of full input
-    const cache = getCacheFromCacheOptionOrFromForKeyArgs({
+    // lookup the output cache
+    const cacheOutput = getCacheFromCacheOptionOrFromForKeyArgs({
       args,
       options: { cache: getOutputCacheOptionFromCacheInput(options.cache) },
+      trigger: WithExtendableCachingTrigger.INVALIDATE,
+    });
+
+    // lookup the dedupe cache
+    const cacheDedupe = getCacheFromCacheOptionOrFromForKeyArgs({
+      args,
+      options: {
+        cache: getDedupeCacheOptionFromCacheInput(options.cache),
+      },
       trigger: WithExtendableCachingTrigger.INVALIDATE,
     });
 
@@ -167,17 +177,27 @@ export const withExtendableCachingAsync = <
       : args.forKey;
 
     // set undefined into the cache for this key, to invalidate the cached value
-    await cache.set(key, undefined);
+    await cacheOutput.set(key, undefined);
+    await cacheDedupe.set(key, undefined);
   };
 
   const update: LogicWithExtendableCachingAsync<L, C>['update'] = async (
     args,
   ) => {
-    // define how to get the cache, with support for `forKey` input instead of full input
-    const cache = getCacheFromCacheOptionOrFromForKeyArgs({
+    // lookup the output cache
+    const cacheOutput = getCacheFromCacheOptionOrFromForKeyArgs({
       args,
       options: { cache: getOutputCacheOptionFromCacheInput(options.cache) },
-      trigger: WithExtendableCachingTrigger.UPDATE,
+      trigger: WithExtendableCachingTrigger.INVALIDATE,
+    });
+
+    // lookup the dedupe cache
+    const cacheDedupe = getCacheFromCacheOptionOrFromForKeyArgs({
+      args,
+      options: {
+        cache: getDedupeCacheOptionFromCacheInput(options.cache),
+      },
+      trigger: WithExtendableCachingTrigger.INVALIDATE,
     });
 
     // define the key, with support for `forKey` input instead of `forInput`
@@ -188,7 +208,7 @@ export const withExtendableCachingAsync = <
       : args.forKey;
 
     // deserialize the cached value
-    const cachedValue = await cache.get(key);
+    const cachedValue = await cacheOutput.get(key);
     const deserializeValue =
       options.deserialize?.value ?? defaultValueDeserializationMethod;
     const deserializedCachedOutput =
@@ -205,7 +225,10 @@ export const withExtendableCachingAsync = <
     const serializedNewValue = serializeValue(newValue);
 
     // set the new value for this key
-    await cache.set(key, serializedNewValue, {
+    await cacheOutput.set(key, serializedNewValue, {
+      secondsUntilExpiration: options.secondsUntilExpiration,
+    });
+    await cacheDedupe.set(key, serializedNewValue, {
       secondsUntilExpiration: options.secondsUntilExpiration,
     });
   };
