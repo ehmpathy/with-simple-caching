@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/ehmpathy/with-simple-caching/compare/v0.12.0...v0.13.0) (2024-12-26)
+
+
+### Features
+
+* **terms:** use uni-time glossary for duration term ([dc74524](https://github.com/ehmpathy/with-simple-caching/commit/dc74524f5d73bb43ee86009ab5c10daae40e083b))
+
 ## [0.12.0](https://github.com/ehmpathy/with-simple-caching/compare/v0.11.4...v0.12.0) (2024-06-06)
 
 
