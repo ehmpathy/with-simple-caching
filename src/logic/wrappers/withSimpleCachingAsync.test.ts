@@ -516,7 +516,7 @@ describe('withSimpleCachingAsync', () => {
         },
         {
           cache,
-          secondsUntilExpiration: 3, // wait three seconds until expiration
+          expiration: { seconds: 3 }, // wait three seconds until expiration
         },
       );
 
@@ -525,7 +525,7 @@ describe('withSimpleCachingAsync', () => {
 
       // confirm that it passed the secondsUntilExpiration through to the cache
       expect(store['[]']).toMatchObject({
-        options: { secondsUntilExpiration: 3 },
+        options: { expiration: { seconds: 3 } },
       });
     });
   });

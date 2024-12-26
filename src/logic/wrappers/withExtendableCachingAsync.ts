@@ -206,7 +206,7 @@ export const withExtendableCachingAsync = <
 
     // set the new value for this key
     await cache.set(key, serializedNewValue, {
-      secondsUntilExpiration: options.secondsUntilExpiration,
+      expiration: options.expiration,
     });
   };
 

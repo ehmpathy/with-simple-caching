@@ -1,3 +1,4 @@
+import { UniDuration } from '@ehmpathy/uni-time';
 import { createCache, SimpleInMemoryCache } from 'simple-in-memory-cache';
 import { isNotUndefined, NotUndefined } from 'type-fns';
 
@@ -64,7 +65,7 @@ export interface WithSimpleCachingAsyncOptions<
       cached: NotUndefined<Awaited<ReturnType<C['get']>>>,
     ) => Awaited<ReturnType<L>>;
   };
-  secondsUntilExpiration?: number;
+  expiration?: UniDuration | null;
 
   /**
    * whether to bypass the cached for either the set or get operation
@@ -129,7 +130,7 @@ const getDeduplicationCacheOptionFromCacheInput = <
   'deduplication' in cacheInput
     ? cacheInput.deduplication
     : createCache({
-        defaultSecondsUntilExpiration: 15 * 60, // support deduplicating requests that take up to 15 minutes to resolve, by default (note: we remove the promise as soon as it resolves through "serialize" method below)
+        expiration: { minutes: 15 }, // support deduplicating requests that take up to 15 minutes to resolve, by default (note: we remove the promise as soon as it resolves through "serialize" method below)
       });
 
 /**
@@ -157,7 +158,7 @@ export const withSimpleCachingAsync = <
       value: serializeValue = defaultValueSerializationMethod, // default serialize value to noOp
     } = {},
     deserialize: { value: deserializeValue = noOp } = {},
-    secondsUntilExpiration,
+    expiration,
     bypass = {
       get: defaultShouldBypassGetMethod,
       set: defaultShouldBypassSetMethod,
@@ -191,7 +192,7 @@ export const withSimpleCachingAsync = <
 
     // set the output to the cache
     const serializedOutput = serializeValue(output);
-    await cache.set(key, serializedOutput, { secondsUntilExpiration });
+    await cache.set(key, serializedOutput, { expiration });
 
     // if the output was undefined, we can just return here - no deserialization needed
     if (output === undefined) return output;

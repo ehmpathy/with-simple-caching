@@ -200,7 +200,7 @@ export const withExtendableCaching = <
 
     // set the new value for this key
     cache.set(key, serializedNewValue, {
-      secondsUntilExpiration: options.secondsUntilExpiration,
+      expiration: options.expiration,
     });
   };
 

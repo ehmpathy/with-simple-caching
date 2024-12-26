@@ -53,7 +53,8 @@
     "postversion": "git push origin HEAD --tags --no-verify"
   },
   "dependencies": {
-    "simple-in-memory-cache": "^0.3.0",
+    "@ehmpathy/uni-time": "^1.7.4",
+    "simple-in-memory-cache": "^0.4.0",
     "type-fns": "0.8.1"
   },
   "devDependencies": {

@@ -1,3 +1,4 @@
+import { UniDuration } from '@ehmpathy/uni-time';
 import { isNotUndefined, NotUndefined } from 'type-fns';
 
 import { SimpleSyncCache } from '../../domain/SimpleCache';
@@ -35,7 +36,7 @@ export interface WithSimpleCachingOptions<
   deserialize?: {
     value?: (cached: NotUndefined<ReturnType<C['get']>>) => ReturnType<L>;
   };
-  secondsUntilExpiration?: number;
+  expiration?: UniDuration | null;
 
   /**
    * whether to bypass the cached for either the set or get operation
@@ -97,7 +98,7 @@ export const withSimpleCaching = <
     deserialize: {
       value: deserializeValue = noOp, // default deserialize value to noOp
     } = {},
-    secondsUntilExpiration,
+    expiration,
     bypass = {
       get: defaultShouldBypassGetMethod,
       set: defaultShouldBypassSetMethod,
@@ -125,7 +126,7 @@ export const withSimpleCaching = <
 
     // set the output to the cache
     const serializedOutput = serializeValue(output);
-    cache.set(key, serializedOutput, { secondsUntilExpiration });
+    cache.set(key, serializedOutput, { expiration });
 
     // if the output was undefined, we can just return here - no deserialization needed
     if (output === undefined) return output;

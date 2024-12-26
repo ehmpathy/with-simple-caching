@@ -1,3 +1,5 @@
+import { UniDuration } from '@ehmpathy/uni-time';
+
 import { SimpleAsyncCache, SimpleSyncCache } from '../domain/SimpleCache';
 
 export const createExampleSyncCache = () => {
@@ -6,7 +8,7 @@ export const createExampleSyncCache = () => {
     set: (
       key: string,
       value: any,
-      options?: { secondsUntilExpiration?: number },
+      options?: { expiration?: UniDuration | null },
     ) => {
       store[key] = options ? { value, options } : { value };
     },
@@ -21,7 +23,7 @@ export const createExampleAsyncCache = <T>() => {
     set: async (
       key: string,
       value: T | undefined,
-      options?: { secondsUntilExpiration?: number },
+      options?: { expiration?: UniDuration | null },
     ) => {
       // eslint-disable-next-line no-nested-ternary
       store[key] =

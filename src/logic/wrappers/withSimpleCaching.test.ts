@@ -349,7 +349,7 @@ describe('withSimpleCaching', () => {
     });
   });
   describe('expiration', () => {
-    it('should apply the secondsUntilExpiration option correctly', async () => {
+    it('should apply the expiration option correctly', async () => {
       const { cache, store } = createExampleSyncCache();
 
       // define an example fn
@@ -361,7 +361,7 @@ describe('withSimpleCaching', () => {
         },
         {
           cache,
-          secondsUntilExpiration: 3, // wait three seconds until expiration
+          expiration: { seconds: 3 }, // wait three seconds until expiration
         },
       );
 
@@ -370,7 +370,7 @@ describe('withSimpleCaching', () => {
 
       // confirm that it passed the secondsUntilExpiration through to the cache
       expect(store['[]']).toMatchObject({
-        options: { secondsUntilExpiration: 3 },
+        options: { expiration: { seconds: 3 } },
       });
     });
   });
