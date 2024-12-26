@@ -29,3 +29,4 @@ export {
   withExtendableCachingAsync,
   LogicWithExtendableCachingAsync,
 } from './logic/wrappers/withExtendableCachingAsync';
+export { withSimpleCachingOnDisk } from './logic/wrappers/withSimpleCachingOnDisk';
