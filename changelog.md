@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0](https://github.com/ehmpathy/with-simple-caching/compare/v0.13.0...v0.14.0) (2024-12-26)
+
+
+### Features
+
+* **wrapper:** expose wrapper to further simplify ondisk caching ([f7f5522](https://github.com/ehmpathy/with-simple-caching/commit/f7f55226b71994109bb1c79d706598d5c552e6b7))
+
 ## [0.13.0](https://github.com/ehmpathy/with-simple-caching/compare/v0.12.0...v0.13.0) (2024-12-26)
 
 
