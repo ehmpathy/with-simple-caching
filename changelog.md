@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.1](https://github.com/ehmpathy/with-simple-caching/compare/v0.14.0...v0.14.1) (2025-02-02)
+
+
+### Bug Fixes
+
+* **ondisk:** ensure cache key ignores context of procedure ([9254f1e](https://github.com/ehmpathy/with-simple-caching/commit/9254f1e04c39dad38bd5ee8038a939e4158fd5ec))
+
 ## [0.14.0](https://github.com/ehmpathy/with-simple-caching/compare/v0.13.0...v0.14.0) (2024-12-26)
 
 
