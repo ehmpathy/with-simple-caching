@@ -31,7 +31,7 @@ export const withSimpleCachingOnDisk = <I, R>(
         castToSafeOnDiskCacheKey({
           procedure: options.procedure,
           execution: {
-            input: forInput,
+            input: forInput[0], // exclude the context
           },
         }),
       value: asSerialJSON,
