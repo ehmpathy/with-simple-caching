@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.14.2](https://github.com/ehmpathy/with-simple-caching/compare/v0.14.1...v0.14.2) (2025-09-12)
+
+
+### Bug Fixes
+
+* **deps:** bump to drop aws-sdk v2 subdep ([0dce8ba](https://github.com/ehmpathy/with-simple-caching/commit/0dce8baf25e6faa3e108dc186004c8cd09408feb))
+* **practs:** bump to latest best ([55e6901](https://github.com/ehmpathy/with-simple-caching/commit/55e69012019cce80913c24f52abd77e772b69f9a))
+
 ## [0.14.1](https://github.com/ehmpathy/with-simple-caching/compare/v0.14.0...v0.14.1) (2025-02-02)
 
 
