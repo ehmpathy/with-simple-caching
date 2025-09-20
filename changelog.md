@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.3](https://github.com/ehmpathy/with-simple-caching/compare/v0.14.2...v0.14.3) (2025-09-20)
+
+
+### Bug Fixes
+
+* **ondisk:** ensure context is fully generic with simple caching ondisk ([a1d786f](https://github.com/ehmpathy/with-simple-caching/commit/a1d786f6e7468093222cc1682b079bbd41ce73d9))
+
 ## [0.14.2](https://github.com/ehmpathy/with-simple-caching/compare/v0.14.1...v0.14.2) (2025-09-12)
 
 
