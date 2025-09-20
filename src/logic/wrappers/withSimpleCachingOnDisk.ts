@@ -1,7 +1,7 @@
 import { UniDuration } from '@ehmpathy/uni-time';
+import { ProcedureInput } from 'procedure-fns';
 import { asSerialJSON, deSerialJSON, SerialJSON } from 'serde-fns';
 import { castToSafeOnDiskCacheKey, createCache } from 'simple-on-disk-cache';
-import { ProcedureInput, VisualogicContext } from 'visualogic';
 
 import { withSimpleCachingAsync } from './withSimpleCachingAsync';
 
@@ -10,8 +10,12 @@ import { withSimpleCachingAsync } from './withSimpleCachingAsync';
  * .why =
  *   - embeds best practices of how to serialize and deserialize
  */
-export const withSimpleCachingOnDisk = <I, R>(
-  logic: (input: I, context: VisualogicContext) => Promise<R>,
+export const withSimpleCachingOnDisk = <
+  TInput,
+  TContext,
+  TResult extends Promise<any>,
+>(
+  logic: (input: TInput, context: TContext) => TResult,
   options: {
     procedure: {
       name: string;
