@@ -60,7 +60,7 @@
     "procedure-fns": "^1.0.1",
     "serde-fns": "^1.2.0",
     "simple-in-memory-cache": "^0.4.0",
-    "simple-on-disk-cache": "^1.7.1",
+    "simple-on-disk-cache": "^1.7.2",
     "type-fns": "^1.20.2"
   },
   "devDependencies": {
