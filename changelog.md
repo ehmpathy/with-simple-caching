@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.4](https://github.com/ehmpathy/with-simple-caching/compare/v0.14.3...v0.14.4) (2025-11-02)
+
+
+### Bug Fixes
+
+* **deps:** bump to latest simple-on-disk-cache ver ([5164503](https://github.com/ehmpathy/with-simple-caching/commit/5164503c80253aecd61c588a60558d2f251a66fa))
+
 ## [0.14.3](https://github.com/ehmpathy/with-simple-caching/compare/v0.14.2...v0.14.3) (2025-09-20)
 
 
