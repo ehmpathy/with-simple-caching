@@ -3,14 +3,14 @@ import { ProcedureInput } from 'procedure-fns';
 import { asSerialJSON, deSerialJSON, SerialJSON } from 'serde-fns';
 import { castToSafeOnDiskCacheKey, createCache } from 'simple-on-disk-cache';
 
-import { withSimpleCachingAsync } from './withSimpleCachingAsync';
+import { withSimpleCacheAsync } from './withSimpleCacheAsync';
 
 /**
  * .what = a utility to make it easier to use on-disk caching
  * .why =
  *   - embeds best practices of how to serialize and deserialize
  */
-export const withSimpleCachingOnDisk = <
+export const withSimpleCacheOnDisk = <
   TInput,
   TContext,
   TResult extends Promise<any>,
@@ -25,7 +25,7 @@ export const withSimpleCachingOnDisk = <
     directory: ProcedureInput<typeof createCache>['directory'];
   },
 ) => {
-  return withSimpleCachingAsync(logic, {
+  return withSimpleCacheAsync(logic, {
     cache: createCache({
       directory: options.directory,
       expiration: options.expiration,

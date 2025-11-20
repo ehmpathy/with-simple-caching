@@ -15,14 +15,14 @@ import {
   KeySerializationMethod,
   noOp,
 } from '../serde/defaults';
-import { withExtendableCaching } from './withExtendableCaching';
+import { withExtendableCache } from './withExtendableCache';
 
 export type AsyncLogic = (...args: any[]) => Promise<any>;
 
 /**
- * options to configure caching for use with-simple-caching
+ * options to configure caching for use with-simple-cache
  */
-export interface WithSimpleCachingAsyncOptions<
+export interface WithSimpleCacheAsyncOptions<
   /**
    * the logic we are caching the responses for
    */
@@ -108,7 +108,7 @@ export const getOutputCacheOptionFromCacheInput = <
    */
   C extends SimpleCache<any>,
 >(
-  cacheInput: WithSimpleCachingAsyncOptions<L, C>['cache'],
+  cacheInput: WithSimpleCacheAsyncOptions<L, C>['cache'],
 ): WithSimpleCachingCacheOption<Parameters<L>, C> =>
   'output' in cacheInput ? cacheInput.output : cacheInput;
 
@@ -125,7 +125,7 @@ const getDeduplicationCacheOptionFromCacheInput = <
    */
   C extends SimpleCache<any>,
 >(
-  cacheInput: WithSimpleCachingAsyncOptions<L, C>['cache'],
+  cacheInput: WithSimpleCacheAsyncOptions<L, C>['cache'],
 ): SimpleInMemoryCache<any> =>
   'deduplication' in cacheInput
     ? cacheInput.deduplication
@@ -140,7 +140,7 @@ const getDeduplicationCacheOptionFromCacheInput = <
  * - utilizes an additional in-memory synchronous cache under the hood to prevent duplicate requests (otherwise, while async cache is resolving, a duplicate parallel request may have be made)
  * - can be given a synchronous cache, since what you can do on an asynchronous cache you can do on a synchronous cache, but not the other way around
  */
-export const withSimpleCachingAsync = <
+export const withSimpleCacheAsync = <
   /**
    * the logic we are caching the responses for
    */
@@ -163,7 +163,7 @@ export const withSimpleCachingAsync = <
       get: defaultShouldBypassGetMethod,
       set: defaultShouldBypassSetMethod,
     },
-  }: WithSimpleCachingAsyncOptions<L, C>,
+  }: WithSimpleCacheAsyncOptions<L, C>,
 ): L => {
   // add async caching to the logic
   const logicWithAsyncCaching = (async (
@@ -205,14 +205,14 @@ export const withSimpleCachingAsync = <
     // eslint-disable-next-line no-console
     console.warn(
       // warn about this because it should never occur
-      'withSimpleCachingAsync encountered a situation which should not occur: cache.get returned undefined immediately after having been set. returning the output directly to prevent irrecoverable failure.',
+      'withSimpleCacheAsync encountered a situation which should not occur: cache.get returned undefined immediately after having been set. returning the output directly to prevent irrecoverable failure.',
       { key },
     );
     return output;
   }) as L;
 
   // wrap the logic with extended sync caching, to ensure that duplicate requests resolve the same promise from in-memory (rather than each getting a promise to check the async cache + operate separately)
-  const { execute, invalidate } = withExtendableCaching(logicWithAsyncCaching, {
+  const { execute, invalidate } = withExtendableCache(logicWithAsyncCaching, {
     cache: getDeduplicationCacheOptionFromCacheInput(cacheOption),
     serialize: {
       key: serializeKey,

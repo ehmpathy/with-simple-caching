@@ -14,19 +14,19 @@ export {
   defaultValueSerializationMethod,
 } from './logic/serde/defaults';
 export {
-  WithSimpleCachingOptions,
-  withSimpleCaching,
-} from './logic/wrappers/withSimpleCaching';
+  WithSimpleCacheOptions,
+  withSimpleCache,
+} from './logic/wrappers/withSimpleCache';
 export {
-  WithSimpleCachingAsyncOptions,
-  withSimpleCachingAsync,
-} from './logic/wrappers/withSimpleCachingAsync';
+  WithSimpleCacheAsyncOptions,
+  withSimpleCacheAsync,
+} from './logic/wrappers/withSimpleCacheAsync';
 export {
-  withExtendableCaching,
-  LogicWithExtendableCaching,
-} from './logic/wrappers/withExtendableCaching';
+  withExtendableCache,
+  LogicWithExtendableCache,
+} from './logic/wrappers/withExtendableCache';
 export {
-  withExtendableCachingAsync,
-  LogicWithExtendableCachingAsync,
-} from './logic/wrappers/withExtendableCachingAsync';
-export { withSimpleCachingOnDisk } from './logic/wrappers/withSimpleCachingOnDisk';
+  withExtendableCacheAsync,
+  LogicWithExtendableCacheAsync,
+} from './logic/wrappers/withExtendableCacheAsync';
+export { withSimpleCacheOnDisk } from './logic/wrappers/withSimpleCacheOnDisk';

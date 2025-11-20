@@ -9,14 +9,14 @@ import {
 } from '../serde/defaults';
 import {
   getOutputCacheOptionFromCacheInput,
-  withSimpleCachingAsync,
-  WithSimpleCachingAsyncOptions,
-} from './withSimpleCachingAsync';
+  withSimpleCacheAsync,
+  WithSimpleCacheAsyncOptions,
+} from './withSimpleCacheAsync';
 
 /**
  * enumerates the extendable methods which can trigger cache operations
  */
-export enum WithExtendableCachingTrigger {
+export enum WithExtendableCacheTrigger {
   EXECUTE = 'EXECUTE',
   INVALIDATE = 'INVALIDATE',
   UPDATE = 'UPDATE',
@@ -31,7 +31,7 @@ export const hasForInputProperty = (obj: any): obj is { forInput: any } =>
 /**
  * the shape of logic that was wrapped with extendable caching for an async cache
  */
-export interface LogicWithExtendableCachingAsync<
+export interface LogicWithExtendableCacheAsync<
   /**
    * the logic we are caching the responses for
    */
@@ -132,7 +132,7 @@ export interface LogicWithExtendableCachingAsync<
  * - in order to define their own `invalidation` and `update` methods, without this function, the user would need to access these caching options per function elsewhere
  * - this function makes it easy to utilize and extend cache invalidation + update commands for the wrapped logic, by managing the references to the caching options on behalf of the user
  */
-export const withExtendableCachingAsync = <
+export const withExtendableCacheAsync = <
   /**
    * the logic we are caching the responses for
    */
@@ -143,20 +143,19 @@ export const withExtendableCachingAsync = <
   C extends SimpleAsyncCache<any>,
 >(
   logic: L,
-  options: WithSimpleCachingAsyncOptions<L, C>,
-): LogicWithExtendableCachingAsync<L, C> => {
-  const execute: LogicWithExtendableCachingAsync<L, C>['execute'] =
-    withSimpleCachingAsync(logic, options);
+  options: WithSimpleCacheAsyncOptions<L, C>,
+): LogicWithExtendableCacheAsync<L, C> => {
+  const execute: LogicWithExtendableCacheAsync<L, C>['execute'] =
+    withSimpleCacheAsync(logic, options);
 
-  const invalidate: LogicWithExtendableCachingAsync<
-    L,
-    C
-  >['invalidate'] = async (args) => {
+  const invalidate: LogicWithExtendableCacheAsync<L, C>['invalidate'] = async (
+    args,
+  ) => {
     // define how to get the cache, with support for `forKey` input instead of full input
     const cache = getCacheFromCacheOptionOrFromForKeyArgs({
       args,
       options: { cache: getOutputCacheOptionFromCacheInput(options.cache) },
-      trigger: WithExtendableCachingTrigger.INVALIDATE,
+      trigger: WithExtendableCacheTrigger.INVALIDATE,
     });
 
     // define the key, with support for `forKey` input instead of `forInput`
@@ -170,14 +169,14 @@ export const withExtendableCachingAsync = <
     await cache.set(key, undefined);
   };
 
-  const update: LogicWithExtendableCachingAsync<L, C>['update'] = async (
+  const update: LogicWithExtendableCacheAsync<L, C>['update'] = async (
     args,
   ) => {
     // define how to get the cache, with support for `forKey` input instead of full input
     const cache = getCacheFromCacheOptionOrFromForKeyArgs({
       args,
       options: { cache: getOutputCacheOptionFromCacheInput(options.cache) },
-      trigger: WithExtendableCachingTrigger.UPDATE,
+      trigger: WithExtendableCacheTrigger.UPDATE,
     });
 
     // define the key, with support for `forKey` input instead of `forInput`

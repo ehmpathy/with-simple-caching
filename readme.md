@@ -1,8 +1,8 @@
-# with-simple-caching
-# with-simple-caching
+# with-simple-cache
+# with-simple-cache
 
-![ci_on_commit](https://github.com/ehmpathy/with-simple-caching/workflows/ci_on_commit/badge.svg)
-![deploy_on_tag](https://github.com/ehmpathy/with-simple-caching/workflows/deploy_on_tag/badge.svg)
+![ci_on_commit](https://github.com/ehmpathy/with-simple-cache/workflows/ci_on_commit/badge.svg)
+![deploy_on_tag](https://github.com/ehmpathy/with-simple-cache/workflows/deploy_on_tag/badge.svg)
 
 A wrapper that makes it simple to add caching to any function.
 
@@ -15,7 +15,7 @@ Notable features:
 # Install
 
 ```sh
-npm install --save with-simple-caching
+npm install --save with-simple-cache
 ```
 
 # Quick start
@@ -28,14 +28,14 @@ for example:
 
 ```ts
 import { createCache } from 'simple-in-memory-cache';
-import { withSimpleCaching } from 'with-simple-caching';
+import { withSimpleCache } from 'with-simple-cache';
 
-const solveSuperToughMathProblem = withSimpleCaching(
+const solveSuperToughMathProblem = withSimpleCache(
   ({ a, b }) => ({ solution: a + b }),
   { cache: createCache() },
 );
 const result1 = solveSuperToughMathProblem({ a: 1, b: 1 }); // runs the logic, sticks the output into the cache, returns a reference to that output
-const result2 = getApiResult({ name: 'casey', number: 821 }); // finds the output in the cache, returns a reference to that output
+const result2 = solveSuperToughMathProblem({ a: 1, b: 1 }); // finds the output in the cache, returns a reference to that output
 expect(result1).toBe(result2); // same exact object, identified by same reference
 ```
 
@@ -47,9 +47,9 @@ for example:
 
 ```ts
 import { createCache } from 'simple-in-memory-cache';
-import { withSimpleCaching } from 'with-simple-caching';
+import { withSimpleCache } from 'with-simple-cache';
 
-const getApiResult = withSimpleCaching(
+const getApiResult = withSimpleCache(
   async ({ name, number }) => axios.get(URL, { name, number }),
   { cache: createCache() },
 );
@@ -66,9 +66,9 @@ in order to cache the output of async logic in a persistant store or across mach
 for example
 ```ts
 import { createCache as createOnDiskCache } from 'simple-on-disk-cache';
-import { withSimpleCachingAsync } from 'with-simple-caching';
+import { withSimpleCacheAsync } from 'with-simple-cache';
 
-const getApiResult = withSimpleCachingAsync(
+const getApiResult = withSimpleCacheAsync(
   async ({ name, number }) => axios.get(URL, { name, number }),
   { cache: createOnDiskCache() },
 );
@@ -86,18 +86,18 @@ expect(await result1).toBe(await result2); // same exact object - the result of 
 
 ```ts
 import { createCache } from 'simple-in-memory-cache';
-import { withSimpleCaching } from 'with-simple-caching';
+import { withSimpleCache } from 'with-simple-cache';
 
-const getRecipesFromApiWithCaching = withSimpleCaching(getRecipesFromApi, { cache: createCache() });
+const getRecipesFromApiWithCaching = withSimpleCache(getRecipesFromApi, { cache: createCache() });
 ```
 
 ### Define the function with caching directly
 
 ```ts
 import { createCache } from 'simple-in-memory-cache';
-import { withSimpleCaching } from 'with-simple-caching';
+import { withSimpleCache } from 'with-simple-cache';
 
-const getBookByName = withSimpleCaching(
+const getBookByName = withSimpleCache(
   async (name: string) => {
     /* ... get the book ... */
     return book;
@@ -113,9 +113,9 @@ const getBookByName = withSimpleCaching(
 local storage, for example:
 
 ```ts
-import { withSimpleCaching } from 'with-simple-caching';
+import { withSimpleCache } from 'with-simple-cache';
 
-const getRecipesFromApiWithLocalStorageCaching = withSimpleCaching(getRecipesFromApi, {
+const getRecipesFromApiWithLocalStorageCaching = withSimpleCache(getRecipesFromApi, {
   // just define how a cache can `get` from and `set` to this data store
   cache: {
     get: (key) => localStorage.getItem(key),
@@ -126,15 +126,15 @@ const getRecipesFromApiWithLocalStorageCaching = withSimpleCaching(getRecipesFro
 
 ### Use an asynchronous persistance layer
 
-some extra logic is required in order to work with asynchronous caches. therefore, a different wrapper is available for this usecase: `withSimpleCachingAsync`.
+some extra logic is required in order to work with asynchronous caches. therefore, a different wrapper is available for this usecase: `withSimpleCacheAsync`.
 
 asynchronous caching on-disk, for example:
 
 ```ts
 import { createCache } from 'simple-on-disk-cache';
-import { withSimpleCachingAsync } from 'with-simple-caching';
+import { withSimpleCacheAsync } from 'with-simple-cache';
 
-const getRecipesFromApiWithAsyncCaching = withSimpleCachingAsync(getRecipesFromApi, {
+const getRecipesFromApiWithAsyncCaching = withSimpleCacheAsync(getRecipesFromApi, {
   cache: createCache({ directory: { s3: { bucket: '__bucket__', prefix: '__prefix__' } } }),
 });
 ```
@@ -145,9 +145,9 @@ serialize the key as the sha hash of the args, for example
 
 ```ts
 import { createCache } from 'simple-in-memory-cache';
-import { withSimpleCaching } from 'with-simple-caching';
+import { withSimpleCache } from 'with-simple-cache';
 
-const getRecipesFromApiWithLocalStorageCaching = withSimpleCaching(getRecipesFromApi, {
+const getRecipesFromApiWithLocalStorageCaching = withSimpleCache(getRecipesFromApi, {
   cache: createCache(),
   serialize: {
     key: (args) =>
@@ -162,7 +162,7 @@ if your cache requires you to store data as a string, as is typically the case w
 
 ```ts
 import { createCache } from 'simple-on-disk-cache';
-import { withSimpleCachingAsync } from 'with-simple-caching';
+import { withSimpleCacheAsync } from 'with-simple-cache';
 
 const getRecipesFromApiWithLocalStorageCaching = withSimpleCachingAsync(getRecipesFromApi, {
   cache: createCache({ directory: { s3: { bucket: '__bucket__', prefix: '__prefix__' } } }),
@@ -182,9 +182,9 @@ if your cache is defined as part of the inputs to your function (e.g., if you're
 for example
 ```ts
 import { createCache, SimpleInMemoryCache } from 'simple-in-memory-cache';
-import { withSimpleCaching } from 'with-simple-caching';
+import { withSimpleCache } from 'with-simple-cache';
 
-const getBookByName = withSimpleCaching(
+const getBookByName = withSimpleCache(
   async ({ name: string}, context: { cache: SimpleInMemoryCache<Book> }) => {
     /* ... get the book ... */
     return book;
@@ -206,9 +206,9 @@ The arguments your function is invoked with is used as the cache key, after seri
 
 ```ts
 import { createCache } from 'simple-in-memory-cache';
-import { withSimpleCaching } from 'with-simple-caching';
+import { withSimpleCache } from 'with-simple-cache';
 
-const getZodiacSign = withSimpleCaching(async ({ birthday }: { birthday: string }) => /* ... */, { cache: createCache() });
+const getZodiacSign = withSimpleCache(async ({ birthday }: { birthday: string }) => /* ... */, { cache: createCache() });
 
 getZodiacSign({ birthday: '2020-07-21' }); // here the cache key is `[{"birthday":"2020-07-21"}]`
 ```
@@ -220,9 +220,9 @@ _note: array order **does** matter_
 You can easily use a custom cache or custom data store / persistance layer for caching with this wrapper.
 
 ```ts
-import { withSimpleCaching } from 'with-simple-caching';
+import { withSimpleCache } from 'with-simple-cache';
 
-const getZodiacSign = withSimpleCaching(
+const getZodiacSign = withSimpleCache(
   async ({ birthday }: { birthday: string }) => /* ... */,
   {
     cache: {

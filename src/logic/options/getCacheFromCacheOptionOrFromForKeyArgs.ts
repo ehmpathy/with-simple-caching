@@ -3,9 +3,9 @@ import { isAFunction } from 'type-fns';
 import { SimpleCache } from '../../domain/SimpleCache';
 import { BadRequestError } from '../../utils/errors/BadRequestError';
 import {
-  WithExtendableCachingTrigger,
+  WithExtendableCacheTrigger,
   hasForInputProperty,
-} from '../wrappers/withExtendableCachingAsync';
+} from '../wrappers/withExtendableCacheAsync';
 import {
   getCacheFromCacheOption,
   WithSimpleCachingCacheOption,
@@ -30,7 +30,7 @@ export const getCacheFromCacheOptionOrFromForKeyArgs = <
 }: {
   args: { forKey: string; cache?: C } | { forInput: Parameters<L> };
   options: { cache: WithSimpleCachingCacheOption<Parameters<L>, C> };
-  trigger: WithExtendableCachingTrigger;
+  trigger: WithExtendableCacheTrigger;
 }): C => {
   // if the args have the forInput property, then we can grab the cache like normal
   if (hasForInputProperty(args))

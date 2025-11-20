@@ -1,10 +1,10 @@
 {
-  "name": "with-simple-caching",
+  "name": "with-simple-cache",
   "author": "ehmpathy",
   "description": "A wrapper that makes it simple to add caching to any function",
   "version": "0.14.4",
-  "repository": "ehmpathy/with-simple-caching",
-  "homepage": "https://github.com/ehmpathy/with-simple-caching",
+  "repository": "ehmpathy/with-simple-cache",
+  "homepage": "https://github.com/ehmpathy/with-simple-cache",
   "keywords": [
     "cache",
     "wrapper",
@@ -18,7 +18,7 @@
     "simple",
     "simple cache"
   ],
-  "bugs": "https://github.com/ehmpathy/with-simple-caching/issues",
+  "bugs": "https://github.com/ehmpathy/with-simple-cache/issues",
   "license": "MIT",
   "main": "dist/index.js",
   "engines": {
@@ -58,7 +58,7 @@
   "dependencies": {
     "@ehmpathy/uni-time": "^1.7.4",
     "procedure-fns": "^1.0.1",
-    "serde-fns": "^1.2.0",
+    "serde-fns": "^1.3.1",
     "simple-in-memory-cache": "^0.4.0",
     "simple-on-disk-cache": "^1.7.2",
     "type-fns": "^1.20.2"
@@ -86,7 +86,8 @@
     "prettier": "2.8.1",
     "ts-jest": "29.1.3",
     "ts-node": "10.9.2",
-    "typescript": "5.4.5"
+    "typescript": "5.4.5",
+    "uuid-fns": "^1.0.2"
   },
   "config": {
     "commitizen": {

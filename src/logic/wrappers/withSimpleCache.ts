@@ -16,9 +16,9 @@ import {
 } from '../serde/defaults';
 
 /**
- * options to configure caching for use with-simple-caching
+ * options to configure caching for use with-simple-cache
  */
-export interface WithSimpleCachingOptions<
+export interface WithSimpleCacheOptions<
   /**
    * the logic we are caching the responses for
    */
@@ -71,14 +71,14 @@ export interface WithSimpleCachingOptions<
  *
  * for example:
  * ```ts
- * const getApiResult = withSimpleCaching(({ name, number }) => axios.get(URL, { name, number }));
+ * const getApiResult = withSimpleCache(({ name, number }) => axios.get(URL, { name, number }));
  * const result1 = getApiResult({ name: 'casey', number: 821 }); // calls the api, puts promise of results into cache, returns that promise
  * const result2 = getApiResult({ name: 'casey', number: 821 }); // returns the same promise from above, because it was found in cache - since same input as request above was used
  * expect(result1).toBe(result2); // same exact object - the promise
  * expect(await result1).toBe(await result2); // same exact object - the result of the promise
  * ```
  */
-export const withSimpleCaching = <
+export const withSimpleCache = <
   /**
    * the logic we are caching the responses for
    */
@@ -103,7 +103,7 @@ export const withSimpleCaching = <
       get: defaultShouldBypassGetMethod,
       set: defaultShouldBypassSetMethod,
     },
-  }: WithSimpleCachingOptions<L, C>,
+  }: WithSimpleCacheOptions<L, C>,
 ): L => {
   return ((...args: Parameters<L>): ReturnType<L> => {
     // define key based on args the function was invoked with
@@ -139,7 +139,7 @@ export const withSimpleCaching = <
     // eslint-disable-next-line no-console
     console.warn(
       // warn about this because it should never occur
-      'withSimpleCaching encountered a situation which should not occur: cache.get returned undefined immediately after having been set. returning the output directly to prevent irrecoverable failure.',
+      'withSimpleCache encountered a situation which should not occur: cache.get returned undefined immediately after having been set. returning the output directly to prevent irrecoverable failure.',
       { key },
     );
     return output;

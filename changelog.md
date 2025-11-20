@@ -99,7 +99,7 @@
 
 ### Features
 
-* **contract:** extract out async support into withSimpleCachingAsync for better types ([eebbc00](https://www.github.com/ehmpathy/with-simple-caching/commit/eebbc007a4f7e756defeec7a4c1924fb91c70c67))
+* **contract:** extract out async support into withSimpleCacheAsync for better types ([eebbc00](https://www.github.com/ehmpathy/with-simple-caching/commit/eebbc007a4f7e756defeec7a4c1924fb91c70c67))
 * **types:** formally distinguish between SimpleSyncCache and SimpleAsyncCache ([0d81b4c](https://www.github.com/ehmpathy/with-simple-caching/commit/0d81b4c9e7c49206fc5ddbda7bfb3f0601b84cb4))
 
 
@@ -194,7 +194,7 @@
 
 ### Features
 
-* **extend:** expose withExtendableCaching enabling easy external invalidation and update of the wrapped logic cache ([d86c628](https://www.github.com/ehmpathy/with-simple-caching/commit/d86c628ceaf0fe995faf692cae18f73295fda397))
+* **extend:** expose withExtendableCache enabling easy external invalidation and update of the wrapped logic cache ([d86c628](https://www.github.com/ehmpathy/with-simple-caching/commit/d86c628ceaf0fe995faf692cae18f73295fda397))
 
 ## [0.6.0](https://www.github.com/ehmpathy/with-simple-caching/compare/v0.5.0...v0.6.0) (2022-11-23)
 

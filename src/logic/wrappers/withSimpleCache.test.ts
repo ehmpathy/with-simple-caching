@@ -1,14 +1,14 @@
 import { createExampleSyncCache } from '../../__test_assets__/createExampleCache';
-import { withSimpleCaching } from './withSimpleCaching';
+import { withSimpleCache } from './withSimpleCache';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-describe('withSimpleCaching', () => {
+describe('withSimpleCache', () => {
   describe('synchronous logic, synchronous cache', () => {
     it('should only invoke the api once for a wrapped function after the first request', () => {
       // define an example fn
       const apiCalls = [];
-      const callApi = withSimpleCaching(
+      const callApi = withSimpleCache(
         () => {
           apiCalls.push(1);
           return Math.random();
@@ -31,7 +31,7 @@ describe('withSimpleCaching', () => {
     it('should invoke the api once for each unique combination of inputs', () => {
       // define an example fn
       const apiCalls = [];
-      const callApi = withSimpleCaching(
+      const callApi = withSimpleCache(
         ({ name }: { name: string }) => {
           apiCalls.push(name);
           return Math.random();
@@ -57,7 +57,7 @@ describe('withSimpleCaching', () => {
     it('should expose the error, if an error was returned by the function', async () => {
       // define an example fn
       const expectedError = new Error('surprise!');
-      const callApi = withSimpleCaching(
+      const callApi = withSimpleCache(
         () => {
           throw expectedError;
         },
@@ -77,7 +77,7 @@ describe('withSimpleCaching', () => {
     it('should be possible to stringify the result of a promise in the cache', async () => {
       // define an example fn
       const apiCalls = [];
-      const callApi = withSimpleCaching(
+      const callApi = withSimpleCache(
         async ({ name }: { name: string }) => {
           apiCalls.push(name);
           await sleep(100);
@@ -102,7 +102,7 @@ describe('withSimpleCaching', () => {
     it('should be possible to wait for the get promise to resolve before deciding whether to set or return', async () => {
       // define an example fn
       const apiCalls = [];
-      const callApi = withSimpleCaching(
+      const callApi = withSimpleCache(
         async ({ name }: { name: string }) => {
           apiCalls.push(name);
           return Math.random();
@@ -126,7 +126,7 @@ describe('withSimpleCaching', () => {
     it('should expose the error, if an error was resolved by the promise returned by the function', async () => {
       // define an example fn
       const expectedError = new Error('surprise!');
-      const callApi = withSimpleCaching(
+      const callApi = withSimpleCache(
         async () => {
           throw expectedError;
         },
@@ -146,7 +146,7 @@ describe('withSimpleCaching', () => {
     it('should be possible to use a custom key serialization method', async () => {
       // define an example fn
       const apiCalls = [];
-      const callApi = withSimpleCaching(
+      const callApi = withSimpleCache(
         ({ name }: { name: string }) => {
           apiCalls.push(name);
           return name;
@@ -178,7 +178,7 @@ describe('withSimpleCaching', () => {
       // define an example fn
       const apiCalls = [];
       const store: Record<string, string> = {};
-      const callApi = withSimpleCaching(
+      const callApi = withSimpleCache(
         ({ names }: { names: string[] }): string[] => {
           apiCalls.push(names);
           return names;
@@ -218,7 +218,7 @@ describe('withSimpleCaching', () => {
       // define an example fn
       const apiCalls = [];
       const store: Record<string, string> = {};
-      const callApi = withSimpleCaching(
+      const callApi = withSimpleCache(
         ({ names }: { names: string[] }): string[] => {
           apiCalls.push(names);
           return names;
@@ -261,7 +261,7 @@ describe('withSimpleCaching', () => {
     it('should consider the cached value as invalid if value resolved as undefined', async () => {
       // define an example fn
       const apiCalls = [];
-      const callApi = withSimpleCaching(
+      const callApi = withSimpleCache(
         () => {
           apiCalls.push(1);
           return undefined; // return undefined each time
@@ -289,7 +289,7 @@ describe('withSimpleCaching', () => {
 
       // define an example fn
       const apiCalls = [];
-      const callApi = withSimpleCaching(
+      const callApi = withSimpleCache(
         () => {
           apiCalls.push(1);
           return Math.random();
@@ -327,7 +327,7 @@ describe('withSimpleCaching', () => {
     it('should treat null as a valid cached value', async () => {
       // define an example fn
       const apiCalls = [];
-      const callApi = withSimpleCaching(
+      const callApi = withSimpleCache(
         () => {
           apiCalls.push(1);
           return null; // return null each time
@@ -354,7 +354,7 @@ describe('withSimpleCaching', () => {
 
       // define an example fn
       const apiCalls = [];
-      const callApi = withSimpleCaching(
+      const callApi = withSimpleCache(
         () => {
           apiCalls.push(1);
           return Math.random();

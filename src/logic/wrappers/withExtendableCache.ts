@@ -7,15 +7,12 @@ import {
   defaultValueDeserializationMethod,
   defaultValueSerializationMethod,
 } from '../serde/defaults';
-import {
-  withSimpleCaching,
-  WithSimpleCachingOptions,
-} from './withSimpleCaching';
+import { withSimpleCache, WithSimpleCacheOptions } from './withSimpleCache';
 
 /**
  * enumerates the extendable methods which can trigger cache operations
  */
-export enum WithExtendableCachingTrigger {
+export enum WithExtendableCacheTrigger {
   EXECUTE = 'EXECUTE',
   INVALIDATE = 'INVALIDATE',
   UPDATE = 'UPDATE',
@@ -30,7 +27,7 @@ export const hasForInputProperty = (obj: any): obj is { forInput: any } =>
 /**
  * the shape of logic that was wrapped with extendable caching for a sync cache
  */
-export interface LogicWithExtendableCaching<
+export interface LogicWithExtendableCache<
   /**
    * the logic we are caching the responses for
    */
@@ -131,7 +128,7 @@ export interface LogicWithExtendableCaching<
  * - in order to define their own `invalidation` and `update` methods, without this function, the user would need to access these caching options per function elsewhere
  * - this function makes it easy to utilize and extend cache invalidation + update commands for the wrapped logic, by managing the references to the caching options on behalf of the user
  */
-export const withExtendableCaching = <
+export const withExtendableCache = <
   /**
    * the logic we are caching the responses for
    */
@@ -142,17 +139,19 @@ export const withExtendableCaching = <
   C extends SimpleSyncCache<any>,
 >(
   logic: L,
-  options: WithSimpleCachingOptions<L, C>,
-): LogicWithExtendableCaching<L, C> => {
-  const execute: LogicWithExtendableCaching<L, C>['execute'] =
-    withSimpleCaching(logic, options);
+  options: WithSimpleCacheOptions<L, C>,
+): LogicWithExtendableCache<L, C> => {
+  const execute: LogicWithExtendableCache<L, C>['execute'] = withSimpleCache(
+    logic,
+    options,
+  );
 
-  const invalidate: LogicWithExtendableCaching<L, C>['invalidate'] = (args) => {
+  const invalidate: LogicWithExtendableCache<L, C>['invalidate'] = (args) => {
     // define how to get the cache, with support for `forKey` input instead of full input
     const cache = getCacheFromCacheOptionOrFromForKeyArgs({
       args,
       options,
-      trigger: WithExtendableCachingTrigger.INVALIDATE,
+      trigger: WithExtendableCacheTrigger.INVALIDATE,
     });
 
     // define the key, with support for `forKey` input instead of `forInput`
@@ -166,12 +165,12 @@ export const withExtendableCaching = <
     cache.set(key, undefined);
   };
 
-  const update: LogicWithExtendableCaching<L, C>['update'] = (args) => {
+  const update: LogicWithExtendableCache<L, C>['update'] = (args) => {
     // define how to get the cache, with support for `forKey` input instead of full input
     const cache = getCacheFromCacheOptionOrFromForKeyArgs({
       args,
       options,
-      trigger: WithExtendableCachingTrigger.UPDATE,
+      trigger: WithExtendableCacheTrigger.UPDATE,
     });
 
     // define the key, with support for `forKey` input instead of `forInput`
