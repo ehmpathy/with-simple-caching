@@ -2,7 +2,7 @@
   "name": "with-simple-cache",
   "author": "ehmpathy",
   "description": "A wrapper that makes it simple to add caching to any function",
-  "version": "0.14.4",
+  "version": "0.15.0",
   "repository": "ehmpathy/with-simple-cache",
   "homepage": "https://github.com/ehmpathy/with-simple-cache",
   "keywords": [

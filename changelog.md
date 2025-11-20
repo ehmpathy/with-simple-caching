@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/ehmpathy/with-simple-cache/compare/v0.14.4...v0.15.0) (2025-11-20)
+
+
+### Features
+
+* **pkg:** drop the gerund in name; caching -&gt; cache ([81f3adf](https://github.com/ehmpathy/with-simple-cache/commit/81f3adf6abef54804a2d16478ec349e6301bf429))
+
 ## [0.14.4](https://github.com/ehmpathy/with-simple-caching/compare/v0.14.3...v0.14.4) (2025-11-02)
 
 
