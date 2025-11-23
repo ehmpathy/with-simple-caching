@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.1](https://github.com/ehmpathy/with-simple-cache/compare/v0.15.0...v0.15.1) (2025-11-23)
+
+
+### Bug Fixes
+
+* **serde:** cutover to input,context pattern for default key serialization ([0337999](https://github.com/ehmpathy/with-simple-cache/commit/0337999c863d3dfa498d5a98690d174b97c4fe6c))
+
 ## [0.15.0](https://github.com/ehmpathy/with-simple-cache/compare/v0.14.4...v0.15.0) (2025-11-20)
 
 
