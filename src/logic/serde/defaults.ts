@@ -1,9 +1,12 @@
-export type KeySerializationMethod<LI> = (args: { forInput: LI }) => string;
+export type KeySerializationMethod<LI extends any[]> = (
+  input: LI[0],
+  context: LI[1],
+) => string;
 
 export const noOp = <LO, CV>(value: LO): CV => value as any;
-export const defaultKeySerializationMethod: KeySerializationMethod<any> = ({
-  forInput,
-}) => JSON.stringify(forInput);
+export const defaultKeySerializationMethod: KeySerializationMethod<any> = (
+  input,
+) => JSON.stringify(input);
 export const defaultValueSerializationMethod = noOp;
 export const defaultValueDeserializationMethod = noOp;
 export const defaultShouldBypassGetMethod = () => {

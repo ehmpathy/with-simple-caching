@@ -107,7 +107,7 @@ export const withSimpleCache = <
 ): L => {
   return ((...args: Parameters<L>): ReturnType<L> => {
     // define key based on args the function was invoked with
-    const key = serializeKey({ forInput: args });
+    const key = serializeKey(args[0], args[1]);
 
     // define cache based on options
     const cache = getCacheFromCacheOption({ forInput: args, cacheOption });

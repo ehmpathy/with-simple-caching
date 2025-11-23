@@ -109,7 +109,7 @@ describe('withSimpleCacheAsync', () => {
 
       // check that the value in the cache is not the promise, but the value itself
       expect(typeof Promise.resolve(821)).toEqual('object'); // prove that a promise to resolve a number has a typeof object
-      expect(typeof store[JSON.stringify([{ name: 'casey' }])]?.value).toEqual(
+      expect(typeof store[JSON.stringify({ name: 'casey' })]?.value).toEqual(
         'number',
       ); // now prove that the value saved into the cache for this name is definetly not a promise
     });
@@ -153,9 +153,7 @@ describe('withSimpleCacheAsync', () => {
 
       // check that the value in the cache is not the promise, but the value itself
       expect(typeof Promise.resolve(821)).toEqual('object'); // prove that a promise to resolve a number has a typeof object
-      expect(typeof store[JSON.stringify([{ name: 'casey' }])]).toEqual(
-        'number',
-      ); // now prove that the value saved into the cache for this name is definetly not a promise
+      expect(typeof store[JSON.stringify({ name: 'casey' })]).toEqual('number'); // now prove that the value saved into the cache for this name is definetly not a promise
     });
     it('should deduplicate parallel requests in memory via the passed in in-memory cache if one was passed in', async () => {
       const store: Record<string, string | undefined> = {};
@@ -200,9 +198,7 @@ describe('withSimpleCacheAsync', () => {
 
       // check that the value in the cache is not the promise, but the value itself
       expect(typeof Promise.resolve(821)).toEqual('object'); // prove that a promise to resolve a number has a typeof object
-      expect(typeof store[JSON.stringify([{ name: 'casey' }])]).toEqual(
-        'number',
-      ); // now prove that the value saved into the cache for this name is definetly not a promise
+      expect(typeof store[JSON.stringify({ name: 'casey' })]).toEqual('number'); // now prove that the value saved into the cache for this name is definetly not a promise
     });
     it('should be possible to catch an error which was rejected by a promise set to the cache in an async cache which awaited the value onSet', async () => {
       const { cache, store } = createExampleAsyncCache();
@@ -226,7 +222,7 @@ describe('withSimpleCacheAsync', () => {
       }
 
       // prove that nothing was set to the cache
-      expect(typeof store[JSON.stringify([{ name: 'casey' }])]?.value).toEqual(
+      expect(typeof store[JSON.stringify({ name: 'casey' })]?.value).toEqual(
         'undefined',
       );
     });
@@ -259,7 +255,7 @@ describe('withSimpleCacheAsync', () => {
 
       // check that the value in the cache is not the promise, but the value itself
       expect(typeof Promise.resolve(821)).toEqual('object'); // prove that a promise to resolve a number has a typeof object
-      expect(typeof store[JSON.stringify([{ name: 'casey' }])]?.value).toEqual(
+      expect(typeof store[JSON.stringify({ name: 'casey' })]?.value).toEqual(
         'number',
       ); // now prove that the value saved into the cache for this name is definetly not a promise
     });
@@ -276,7 +272,7 @@ describe('withSimpleCacheAsync', () => {
         {
           cache: createExampleAsyncCache().cache,
           serialize: {
-            key: ({ forInput }) => forInput[0].name.slice(0, 1), // serialize to only the first letter of the name arg
+            key: (input) => input.name.slice(0, 1), // serialize to only the first letter of the name arg
           },
         },
       );
@@ -389,7 +385,7 @@ describe('withSimpleCacheAsync', () => {
         {
           cache: createExampleAsyncCache().cache,
           serialize: {
-            key: ({ forInput }) => forInput[0].name.slice(0, 1), // serialize to only the first letter of the name arg
+            key: (input) => input.name.slice(0, 1), // serialize to only the first letter of the name arg
           },
         },
       );
@@ -467,8 +463,8 @@ describe('withSimpleCacheAsync', () => {
       expect(apiCalls.length).toEqual(1);
 
       // now set the value to undefined
-      expect(store['[]']).toBeDefined(); // sanity check that we've defined the key correctly
-      store['[]'] = undefined; // invalidate the key written to above
+      expect(store['undefined']).toBeDefined(); // sanity check that we've defined the key correctly
+      store['undefined'] = undefined; // invalidate the key written to above
 
       // now call the api again
       const result4 = await callApi();
@@ -524,7 +520,7 @@ describe('withSimpleCacheAsync', () => {
       await callApi();
 
       // confirm that it passed the secondsUntilExpiration through to the cache
-      expect(store['[]']).toMatchObject({
+      expect(store['undefined']).toMatchObject({
         options: { expiration: { seconds: 3 } },
       });
     });

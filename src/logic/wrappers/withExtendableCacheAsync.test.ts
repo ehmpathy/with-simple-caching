@@ -88,7 +88,7 @@ describe('withExtendableCacheAsync', () => {
 
       // invalidate the cached value for one of the inputs
       await callApi.invalidate({
-        forKey: JSON.stringify([{ galaxy: 'andromeda' }]),
+        forKey: JSON.stringify({ galaxy: 'andromeda' }),
       });
 
       // now call the cache again for that invalidated value, and prove it called the api again
@@ -111,7 +111,7 @@ describe('withExtendableCacheAsync', () => {
         {
           cache: ({ fromInput }) => fromInput[1].cache,
           serialize: {
-            key: ({ forInput }) => forInput[0].galaxy, // dont include cache as part of the key + simplify the key to just the galaxy
+            key: (input) => input.galaxy, // dont include cache as part of the key + simplify the key to just the galaxy
           },
         },
       );
@@ -219,7 +219,7 @@ describe('withExtendableCacheAsync', () => {
 
       // update the cached value for one of the inputs
       await callApi.update({
-        forKey: JSON.stringify([{ galaxy: 'andromeda' }]),
+        forKey: JSON.stringify({ galaxy: 'andromeda' }),
         toValue: 821,
       });
 
@@ -248,7 +248,7 @@ describe('withExtendableCacheAsync', () => {
         {
           cache: ({ fromInput }) => fromInput[1].cache,
           serialize: {
-            key: ({ forInput }) => forInput[0].galaxy, // dont include cache as part of the key + simplify the key to just the galaxy
+            key: (input) => input.galaxy, // dont include cache as part of the key + simplify the key to just the galaxy
           },
         },
       );

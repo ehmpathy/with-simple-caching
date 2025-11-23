@@ -158,7 +158,7 @@ export const withExtendableCache = <
     const serializeKey =
       options.serialize?.key ?? defaultKeySerializationMethod;
     const key = hasForInputProperty(args)
-      ? serializeKey({ forInput: args.forInput })
+      ? serializeKey(args.forInput[0], args.forInput[1])
       : args.forKey;
 
     // set undefined into the cache for this key, to invalidate the cached value
@@ -177,7 +177,7 @@ export const withExtendableCache = <
     const serializeKey =
       options.serialize?.key ?? defaultKeySerializationMethod;
     const key = hasForInputProperty(args)
-      ? serializeKey({ forInput: args.forInput })
+      ? serializeKey(args.forInput[0], args.forInput[1])
       : args.forKey;
 
     // deserialize the cached value

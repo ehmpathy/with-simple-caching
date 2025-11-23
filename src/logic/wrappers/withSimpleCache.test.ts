@@ -154,7 +154,7 @@ describe('withSimpleCache', () => {
         {
           cache: createExampleSyncCache().cache,
           serialize: {
-            key: ({ forInput }) => forInput[0].name.slice(0, 1), // serialize to only the first letter of the name arg
+            key: (input) => input.name.slice(0, 1), // serialize to only the first letter of the name arg
           },
         },
       );
@@ -312,8 +312,8 @@ describe('withSimpleCache', () => {
       expect(apiCalls.length).toEqual(1);
 
       // now set the value to undefined
-      expect(store['[]']).toBeDefined(); // sanity check that we've defined the key correctly
-      store['[]'] = undefined; // invalidate the key written to above
+      expect(store['undefined']).toBeDefined(); // sanity check that we've defined the key correctly
+      store['undefined'] = undefined; // invalidate the key written to above
 
       // now call the api again
       const result4 = callApi();
@@ -369,7 +369,7 @@ describe('withSimpleCache', () => {
       callApi();
 
       // confirm that it passed the secondsUntilExpiration through to the cache
-      expect(store['[]']).toMatchObject({
+      expect(store['undefined']).toMatchObject({
         options: { expiration: { seconds: 3 } },
       });
     });

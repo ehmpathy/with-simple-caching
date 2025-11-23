@@ -31,11 +31,11 @@ export const withSimpleCacheOnDisk = <
       expiration: options.expiration,
     }),
     serialize: {
-      key: ({ forInput }) =>
+      key: (input) =>
         castToSafeOnDiskCacheKey({
           procedure: options.procedure,
           execution: {
-            input: forInput[0], // exclude the context
+            input, // now we receive the input directly, context is excluded automatically
           },
         }),
       value: asSerialJSON,
