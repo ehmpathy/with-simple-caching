@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.15.2](https://github.com/ehmpathy/with-simple-cache/compare/v0.15.1...v0.15.2) (2025-12-18)
+
+
+### Bug Fixes
+
+* **cicd:** deworm release.yml via github appauth ([065f63e](https://github.com/ehmpathy/with-simple-cache/commit/065f63e8ff32966db7284c3daa4181de55a3dbd9))
+* **terms:** complete the removal of gerunds ([#42](https://github.com/ehmpathy/with-simple-cache/issues/42)) ([8de62b1](https://github.com/ehmpathy/with-simple-cache/commit/8de62b10a1427ce99f797412a8412cd26e7b4bdf))
+
 ## [0.15.1](https://github.com/ehmpathy/with-simple-cache/compare/v0.15.0...v0.15.1) (2025-11-23)
 
 
