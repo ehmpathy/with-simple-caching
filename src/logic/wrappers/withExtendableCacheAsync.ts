@@ -1,7 +1,7 @@
 import { isAFunction } from 'type-fns';
 
 import { SimpleAsyncCache } from '../../domain/SimpleCache';
-import { getCacheFromCacheOptionOrFromForKeyArgs } from '../options/getCacheFromCacheOptionOrFromForKeyArgs';
+import { getCacheFromCacheChoiceOrFromForKeyArgs } from '../options/getCacheFromCacheChoiceOrFromForKeyArgs';
 import {
   defaultKeySerializationMethod,
   defaultValueDeserializationMethod,
@@ -29,11 +29,11 @@ export const hasForInputProperty = (obj: any): obj is { forInput: any } =>
   !!obj.forInput;
 
 /**
- * the shape of logic that was wrapped with extendable caching for an async cache
+ * the shape of logic that was wrapped with extendable cache for an async cache
  */
 export interface LogicWithExtendableCacheAsync<
   /**
-   * the logic we are caching the responses for
+   * the logic we are adding cache for
    */
   L extends (...args: any) => Promise<any>,
   /**
@@ -42,7 +42,7 @@ export interface LogicWithExtendableCacheAsync<
   C extends SimpleAsyncCache<any>,
 > {
   /**
-   * execute the logic with caching
+   * execute the logic with cache
    */
   execute: L;
 
@@ -121,20 +121,20 @@ export interface LogicWithExtendableCacheAsync<
 }
 
 /**
- * exposes the cache-wrapped method along with some primitives which enable extending the caching logic
+ * exposes the cache-wrapped method along with some primitives which enable extending the cache logic
  *
  * specifically
  * - exposes a way to `invalidate` the cache, for a given input (e.g., to support external triggers for invalidation)
- * - exposes a way to `update` the cache, for a given input (e.g., to support write-through caching and optimistic caching)
+ * - exposes a way to `update` the cache, for a given input (e.g., to support write-through cache and optimistic cache)
  *
  * relevance
- * - when wrapping logic to cache the user is able to specify several caching options (e.g., key serialization method, value serialization method, etc)
- * - in order to define their own `invalidation` and `update` methods, without this function, the user would need to access these caching options per function elsewhere
- * - this function makes it easy to utilize and extend cache invalidation + update commands for the wrapped logic, by managing the references to the caching options on behalf of the user
+ * - when wrapping logic to cache the user is able to specify several cache options (e.g., key serialization method, value serialization method, etc)
+ * - in order to define their own `invalidation` and `update` methods, without this function, the user would need to access these cache options per function elsewhere
+ * - this function makes it easy to utilize and extend cache invalidation + update commands for the wrapped logic, by managing the references to the cache options on behalf of the user
  */
 export const withExtendableCacheAsync = <
   /**
-   * the logic we are caching the responses for
+   * the logic we are adding cache for
    */
   L extends (...args: any) => Promise<any>,
   /**
@@ -152,7 +152,7 @@ export const withExtendableCacheAsync = <
     args,
   ) => {
     // define how to get the cache, with support for `forKey` input instead of full input
-    const cache = getCacheFromCacheOptionOrFromForKeyArgs({
+    const cache = getCacheFromCacheChoiceOrFromForKeyArgs({
       args,
       options: { cache: getOutputCacheOptionFromCacheInput(options.cache) },
       trigger: WithExtendableCacheTrigger.INVALIDATE,
@@ -173,7 +173,7 @@ export const withExtendableCacheAsync = <
     args,
   ) => {
     // define how to get the cache, with support for `forKey` input instead of full input
-    const cache = getCacheFromCacheOptionOrFromForKeyArgs({
+    const cache = getCacheFromCacheChoiceOrFromForKeyArgs({
       args,
       options: { cache: getOutputCacheOptionFromCacheInput(options.cache) },
       trigger: WithExtendableCacheTrigger.UPDATE,

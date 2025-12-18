@@ -4,9 +4,9 @@ import { isNotUndefined, NotUndefined } from 'type-fns';
 
 import { SimpleCache } from '../../domain/SimpleCache';
 import {
-  getCacheFromCacheOption,
-  WithSimpleCachingCacheOption,
-} from '../options/getCacheFromCacheOption';
+  getCacheFromCacheChoice,
+  WithSimpleCacheChoice,
+} from '../options/getCacheFromCacheChoice';
 import {
   defaultKeySerializationMethod,
   defaultShouldBypassGetMethod,
@@ -20,11 +20,11 @@ import { withExtendableCache } from './withExtendableCache';
 export type AsyncLogic = (...args: any[]) => Promise<any>;
 
 /**
- * options to configure caching for use with-simple-cache
+ * options to configure cache for use with-simple-cache
  */
 export interface WithSimpleCacheAsyncOptions<
   /**
-   * the logic we are caching the responses for
+   * the logic we are adding cache for
    */
   L extends AsyncLogic,
   /**
@@ -36,12 +36,12 @@ export interface WithSimpleCacheAsyncOptions<
    * the cache to persist outputs
    */
   cache:
-    | WithSimpleCachingCacheOption<Parameters<L>, C>
+    | WithSimpleCacheChoice<Parameters<L>, C>
     | {
         /**
          * the cache to cache output to
          */
-        output: WithSimpleCachingCacheOption<Parameters<L>, C>;
+        output: WithSimpleCacheChoice<Parameters<L>, C>;
 
         /**
          * the cache to use for parallel in memory request deduplication
@@ -100,7 +100,7 @@ export interface WithSimpleCacheAsyncOptions<
  */
 export const getOutputCacheOptionFromCacheInput = <
   /**
-   * the logic we are caching the responses for
+   * the logic we are adding cache for
    */
   L extends AsyncLogic,
   /**
@@ -109,7 +109,7 @@ export const getOutputCacheOptionFromCacheInput = <
   C extends SimpleCache<any>,
 >(
   cacheInput: WithSimpleCacheAsyncOptions<L, C>['cache'],
-): WithSimpleCachingCacheOption<Parameters<L>, C> =>
+): WithSimpleCacheChoice<Parameters<L>, C> =>
   'output' in cacheInput ? cacheInput.output : cacheInput;
 
 /**
@@ -117,7 +117,7 @@ export const getOutputCacheOptionFromCacheInput = <
  */
 const getDeduplicationCacheOptionFromCacheInput = <
   /**
-   * the logic we are caching the responses for
+   * the logic we are adding cache for
    */
   L extends AsyncLogic,
   /**
@@ -134,7 +134,7 @@ const getDeduplicationCacheOptionFromCacheInput = <
       });
 
 /**
- * a wrapper which adds asynchronous caching to asynchronous logic
+ * a wrapper which adds asynchronous cache to asynchronous logic
  *
  * note
  * - utilizes an additional in-memory synchronous cache under the hood to prevent duplicate requests (otherwise, while async cache is resolving, a duplicate parallel request may have be made)
@@ -142,7 +142,7 @@ const getDeduplicationCacheOptionFromCacheInput = <
  */
 export const withSimpleCacheAsync = <
   /**
-   * the logic we are caching the responses for
+   * the logic we are adding cache for
    */
   L extends AsyncLogic,
   /**
@@ -165,15 +165,15 @@ export const withSimpleCacheAsync = <
     },
   }: WithSimpleCacheAsyncOptions<L, C>,
 ): L => {
-  // add async caching to the logic
-  const logicWithAsyncCaching = (async (
+  // add async cache to the logic
+  const logicWithAsyncCache = (async (
     ...args: Parameters<L>
   ): Promise<ReturnType<L>> => {
     // define key based on args the function was invoked with
     const key = serializeKey(args[0], args[1]);
 
     // define cache based on options
-    const cache = getCacheFromCacheOption({
+    const cache = getCacheFromCacheChoice({
       forInput: args,
       cacheOption: getOutputCacheOptionFromCacheInput(cacheOption),
     });
@@ -211,8 +211,8 @@ export const withSimpleCacheAsync = <
     return output;
   }) as L;
 
-  // wrap the logic with extended sync caching, to ensure that duplicate requests resolve the same promise from in-memory (rather than each getting a promise to check the async cache + operate separately)
-  const { execute, invalidate } = withExtendableCache(logicWithAsyncCaching, {
+  // wrap the logic with extended sync cache, to ensure that duplicate requests resolve the same promise from in-memory (rather than each getting a promise to check the async cache + operate separately)
+  const { execute, invalidate } = withExtendableCache(logicWithAsyncCache, {
     cache: getDeduplicationCacheOptionFromCacheInput(cacheOption),
     serialize: {
       key: serializeKey,
@@ -220,10 +220,10 @@ export const withSimpleCacheAsync = <
   });
 
   // define a function which the user will run which kicks off the result + invalidates the in-memory cache promise as soon as it finishes
-  const logicWithAsyncCachingAndInMemoryRequestDeduplication = async (
+  const logicWithAsyncCacheAndInMemoryRequestDeduplication = async (
     ...args: Parameters<L>
   ): Promise<ReturnType<L>> => {
-    // start executing the request w/ async caching + sync caching
+    // start executing the request w/ async cache + sync cache
     const promiseResult = execute(...args);
 
     // ensure that after the promise resolves, we remove it from the cache (so that unique subsequent requests can still be made)
@@ -235,6 +235,6 @@ export const withSimpleCacheAsync = <
     return promiseResultAfterInvalidation;
   };
 
-  // return the function w/ async caching and sync-in-memory-request-deduplication
-  return logicWithAsyncCachingAndInMemoryRequestDeduplication as L;
+  // return the function w/ async cache and sync-in-memory-request-deduplication
+  return logicWithAsyncCacheAndInMemoryRequestDeduplication as L;
 };

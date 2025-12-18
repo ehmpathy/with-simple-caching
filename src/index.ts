@@ -4,9 +4,9 @@ export {
   SimpleSyncCache,
 } from './domain/SimpleCache';
 export {
-  WithSimpleCachingCacheOption,
+  WithSimpleCacheChoice,
   SimpleCacheExtractionMethod,
-} from './logic/options/getCacheFromCacheOption';
+} from './logic/options/getCacheFromCacheChoice';
 export {
   KeySerializationMethod,
   defaultKeySerializationMethod,

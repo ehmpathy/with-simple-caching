@@ -6,7 +6,7 @@ import { castToSafeOnDiskCacheKey, createCache } from 'simple-on-disk-cache';
 import { withSimpleCacheAsync } from './withSimpleCacheAsync';
 
 /**
- * .what = a utility to make it easier to use on-disk caching
+ * .what = a utility to make it easier to use on-disk cache
  * .why =
  *   - embeds best practices of how to serialize and deserialize
  */

@@ -7,16 +7,16 @@ import {
   hasForInputProperty,
 } from '../wrappers/withExtendableCacheAsync';
 import {
-  getCacheFromCacheOption,
-  WithSimpleCachingCacheOption,
-} from './getCacheFromCacheOption';
+  getCacheFromCacheChoice,
+  WithSimpleCacheChoice,
+} from './getCacheFromCacheChoice';
 
 /**
  * a function which is capable of grabbing the cache from arguments to the `invalidate` or `update` commands, supporting both the case when invoked with `forInput` and when invoked with `forKey`
  */
-export const getCacheFromCacheOptionOrFromForKeyArgs = <
+export const getCacheFromCacheChoiceOrFromForKeyArgs = <
   /**
-   * the logic we are caching the responses for
+   * the logic we are adding cache for
    */
   L extends (...args: any) => any,
   /**
@@ -29,12 +29,12 @@ export const getCacheFromCacheOptionOrFromForKeyArgs = <
   trigger,
 }: {
   args: { forKey: string; cache?: C } | { forInput: Parameters<L> };
-  options: { cache: WithSimpleCachingCacheOption<Parameters<L>, C> };
+  options: { cache: WithSimpleCacheChoice<Parameters<L>, C> };
   trigger: WithExtendableCacheTrigger;
 }): C => {
   // if the args have the forInput property, then we can grab the cache like normal
   if (hasForInputProperty(args))
-    return getCacheFromCacheOption({
+    return getCacheFromCacheChoice({
       forInput: args.forInput,
       cacheOption: options.cache,
     });
