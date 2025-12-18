@@ -1,20 +1,21 @@
-import { UniDuration } from '@ehmpathy/uni-time';
-import { createCache, SimpleInMemoryCache } from 'simple-in-memory-cache';
-import { isNotUndefined, NotUndefined } from 'type-fns';
+import type { UniDuration } from '@ehmpathy/uni-time';
+import { createCache, type SimpleInMemoryCache } from 'simple-in-memory-cache';
+import { isNotUndefined, type NotUndefined } from 'type-fns';
 
-import { SimpleCache } from '../../domain/SimpleCache';
+import type { SimpleCache } from '@src/domain.objects/SimpleCache';
 import {
   getCacheFromCacheChoice,
-  WithSimpleCacheChoice,
-} from '../options/getCacheFromCacheChoice';
+  type WithSimpleCacheChoice,
+} from '@src/domain.operations/options/getCacheFromCacheChoice';
 import {
   defaultKeySerializationMethod,
   defaultShouldBypassGetMethod,
   defaultShouldBypassSetMethod,
   defaultValueSerializationMethod,
-  KeySerializationMethod,
+  type KeySerializationMethod,
   noOp,
-} from '../serde/defaults';
+} from '@src/domain.operations/serde/defaults';
+
 import { withExtendableCache } from './withExtendableCache';
 
 export type AsyncLogic = (...args: any[]) => Promise<any>;

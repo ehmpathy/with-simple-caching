@@ -1,4 +1,4 @@
-import { UniDuration } from '@ehmpathy/uni-time';
+import type { UniDuration } from '@ehmpathy/uni-time';
 
 /**
  * a simple cache which synchronously gets and sets values to its store

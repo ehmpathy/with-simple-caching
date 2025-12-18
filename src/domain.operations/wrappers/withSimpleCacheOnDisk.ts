@@ -1,6 +1,6 @@
-import { UniDuration } from '@ehmpathy/uni-time';
-import { ProcedureInput } from 'procedure-fns';
-import { asSerialJSON, deSerialJSON, SerialJSON } from 'serde-fns';
+import type { UniDuration } from '@ehmpathy/uni-time';
+import type { ProcedureInput } from 'procedure-fns';
+import { asSerialJSON, deSerialJSON, type SerialJSON } from 'serde-fns';
 import { castToSafeOnDiskCacheKey, createCache } from 'simple-on-disk-cache';
 
 import { withSimpleCacheAsync } from './withSimpleCacheAsync';

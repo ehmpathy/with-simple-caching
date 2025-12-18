@@ -1,19 +1,19 @@
-import { UniDuration } from '@ehmpathy/uni-time';
-import { isNotUndefined, NotUndefined } from 'type-fns';
+import type { UniDuration } from '@ehmpathy/uni-time';
+import { isNotUndefined, type NotUndefined } from 'type-fns';
 
-import { SimpleSyncCache } from '../../domain/SimpleCache';
+import type { SimpleSyncCache } from '@src/domain.objects/SimpleCache';
 import {
   getCacheFromCacheChoice,
-  WithSimpleCacheChoice,
-} from '../options/getCacheFromCacheChoice';
+  type WithSimpleCacheChoice,
+} from '@src/domain.operations/options/getCacheFromCacheChoice';
 import {
   defaultKeySerializationMethod,
   defaultShouldBypassGetMethod,
   defaultShouldBypassSetMethod,
   defaultValueSerializationMethod,
-  KeySerializationMethod,
+  type KeySerializationMethod,
   noOp,
-} from '../serde/defaults';
+} from '@src/domain.operations/serde/defaults';
 
 /**
  * options to configure cache for use with-simple-cache

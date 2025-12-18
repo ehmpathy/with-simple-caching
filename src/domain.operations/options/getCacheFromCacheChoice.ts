@@ -1,7 +1,7 @@
 import { isAFunction } from 'type-fns';
 
-import { SimpleCache } from '../../domain/SimpleCache';
-import { BadRequestError } from '../../utils/errors/BadRequestError';
+import type { SimpleCache } from '@src/domain.objects/SimpleCache';
+import { BadRequestError } from '@src/utils/errors/BadRequestError';
 
 /**
  * a method which specifies where how to extract a simple-cache from input args

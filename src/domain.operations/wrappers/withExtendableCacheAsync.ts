@@ -1,13 +1,18 @@
 import { isAFunction } from 'type-fns';
 
-import { SimpleSyncCache } from '../../domain/SimpleCache';
-import { getCacheFromCacheChoiceOrFromForKeyArgs } from '../options/getCacheFromCacheChoiceOrFromForKeyArgs';
+import type { SimpleAsyncCache } from '@src/domain.objects/SimpleCache';
+import { getCacheFromCacheChoiceOrFromForKeyArgs } from '@src/domain.operations/options/getCacheFromCacheChoiceOrFromForKeyArgs';
 import {
   defaultKeySerializationMethod,
   defaultValueDeserializationMethod,
   defaultValueSerializationMethod,
-} from '../serde/defaults';
-import { withSimpleCache, WithSimpleCacheOptions } from './withSimpleCache';
+} from '@src/domain.operations/serde/defaults';
+
+import {
+  getOutputCacheOptionFromCacheInput,
+  type WithSimpleCacheAsyncOptions,
+  withSimpleCacheAsync,
+} from './withSimpleCacheAsync';
 
 /**
  * enumerates the extendable methods which can trigger cache operations
@@ -25,17 +30,17 @@ export const hasForInputProperty = (obj: any): obj is { forInput: any } =>
   !!obj.forInput;
 
 /**
- * the shape of logic that was wrapped with extendable cache for a sync cache
+ * the shape of logic that was wrapped with extendable cache for an async cache
  */
-export interface LogicWithExtendableCache<
+export interface LogicWithExtendableCacheAsync<
   /**
    * the logic we are adding cache for
    */
-  L extends (...args: any) => any,
+  L extends (...args: any) => Promise<any>,
   /**
    * the type of cache being used
    */
-  C extends SimpleSyncCache<any>,
+  C extends SimpleAsyncCache<any>,
 > {
   /**
    * execute the logic with cache
@@ -67,7 +72,7 @@ export interface LogicWithExtendableCache<
            */
           cache?: C;
         },
-  ) => void;
+  ) => Promise<void>;
 
   /**
    * update the cached value for a given input
@@ -88,10 +93,10 @@ export interface LogicWithExtendableCache<
            * update the cache to this value
            */
           toValue:
-            | ReturnType<L>
+            | Awaited<ReturnType<L>>
             | ((args: {
-                fromCachedOutput: ReturnType<L> | undefined;
-              }) => ReturnType<L>);
+                fromCachedOutput: Awaited<ReturnType<L>> | undefined;
+              }) => ReturnType<L> | Awaited<ReturnType<L>>);
         }
       | {
           /**
@@ -103,17 +108,17 @@ export interface LogicWithExtendableCache<
            * update the cache to this value
            */
           toValue:
-            | ReturnType<L>
+            | Awaited<ReturnType<L>>
             | ((args: {
-                fromCachedOutput: ReturnType<L> | undefined;
-              }) => ReturnType<L>);
+                fromCachedOutput: Awaited<ReturnType<L>> | undefined;
+              }) => ReturnType<L> | Awaited<ReturnType<L>>);
 
           /**
            * the cache to use, if the cache must be was defined from input parameters at runtime
            */
           cache?: C;
         },
-  ) => void;
+  ) => Promise<void>;
 }
 
 /**
@@ -128,29 +133,29 @@ export interface LogicWithExtendableCache<
  * - in order to define their own `invalidation` and `update` methods, without this function, the user would need to access these cache options per function elsewhere
  * - this function makes it easy to utilize and extend cache invalidation + update commands for the wrapped logic, by managing the references to the cache options on behalf of the user
  */
-export const withExtendableCache = <
+export const withExtendableCacheAsync = <
   /**
    * the logic we are adding cache for
    */
-  L extends (...args: any) => any,
+  L extends (...args: any) => Promise<any>,
   /**
    * the type of cache being used
    */
-  C extends SimpleSyncCache<any>,
+  C extends SimpleAsyncCache<any>,
 >(
   logic: L,
-  options: WithSimpleCacheOptions<L, C>,
-): LogicWithExtendableCache<L, C> => {
-  const execute: LogicWithExtendableCache<L, C>['execute'] = withSimpleCache(
-    logic,
-    options,
-  );
+  options: WithSimpleCacheAsyncOptions<L, C>,
+): LogicWithExtendableCacheAsync<L, C> => {
+  const execute: LogicWithExtendableCacheAsync<L, C>['execute'] =
+    withSimpleCacheAsync(logic, options);
 
-  const invalidate: LogicWithExtendableCache<L, C>['invalidate'] = (args) => {
+  const invalidate: LogicWithExtendableCacheAsync<L, C>['invalidate'] = async (
+    args,
+  ) => {
     // define how to get the cache, with support for `forKey` input instead of full input
     const cache = getCacheFromCacheChoiceOrFromForKeyArgs({
       args,
-      options,
+      options: { cache: getOutputCacheOptionFromCacheInput(options.cache) },
       trigger: WithExtendableCacheTrigger.INVALIDATE,
     });
 
@@ -162,14 +167,16 @@ export const withExtendableCache = <
       : args.forKey;
 
     // set undefined into the cache for this key, to invalidate the cached value
-    cache.set(key, undefined);
+    await cache.set(key, undefined);
   };
 
-  const update: LogicWithExtendableCache<L, C>['update'] = (args) => {
+  const update: LogicWithExtendableCacheAsync<L, C>['update'] = async (
+    args,
+  ) => {
     // define how to get the cache, with support for `forKey` input instead of full input
     const cache = getCacheFromCacheChoiceOrFromForKeyArgs({
       args,
-      options,
+      options: { cache: getOutputCacheOptionFromCacheInput(options.cache) },
       trigger: WithExtendableCacheTrigger.UPDATE,
     });
 
@@ -181,16 +188,16 @@ export const withExtendableCache = <
       : args.forKey;
 
     // deserialize the cached value
-    const cachedValue = cache.get(key);
+    const cachedValue = await cache.get(key);
     const deserializeValue =
       options.deserialize?.value ?? defaultValueDeserializationMethod;
     const deserializedCachedOutput =
       cachedValue !== undefined ? deserializeValue(cachedValue) : undefined;
 
     // compute the new value
-    const newValue: ReturnType<L> = isAFunction(args.toValue)
-      ? args.toValue({ fromCachedOutput: deserializedCachedOutput })
-      : args.toValue;
+    const newValue: Awaited<ReturnType<L>> = isAFunction(args.toValue)
+      ? await args.toValue({ fromCachedOutput: deserializedCachedOutput })
+      : await args.toValue;
 
     // define the serialized new value
     const serializeValue =
@@ -198,7 +205,7 @@ export const withExtendableCache = <
     const serializedNewValue = serializeValue(newValue);
 
     // set the new value for this key
-    cache.set(key, serializedNewValue, {
+    await cache.set(key, serializedNewValue, {
       expiration: options.expiration,
     });
   };

@@ -1,14 +1,15 @@
 import { isAFunction } from 'type-fns';
 
-import { SimpleCache } from '../../domain/SimpleCache';
-import { BadRequestError } from '../../utils/errors/BadRequestError';
+import type { SimpleCache } from '@src/domain.objects/SimpleCache';
 import {
-  WithExtendableCacheTrigger,
   hasForInputProperty,
-} from '../wrappers/withExtendableCacheAsync';
+  type WithExtendableCacheTrigger,
+} from '@src/domain.operations/wrappers/withExtendableCacheAsync';
+import { BadRequestError } from '@src/utils/errors/BadRequestError';
+
 import {
   getCacheFromCacheChoice,
-  WithSimpleCacheChoice,
+  type WithSimpleCacheChoice,
 } from './getCacheFromCacheChoice';
 
 /**

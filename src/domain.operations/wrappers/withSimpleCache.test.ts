@@ -1,4 +1,5 @@
-import { createExampleSyncCache } from '../../__test_assets__/createExampleCache';
+import { createExampleSyncCache } from '@src/.test.assets/createExampleCache';
+
 import { withSimpleCache } from './withSimpleCache';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
