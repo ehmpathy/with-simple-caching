@@ -4,7 +4,7 @@
 ![ci_on_commit](https://github.com/ehmpathy/with-simple-cache/workflows/ci_on_commit/badge.svg)
 ![deploy_on_tag](https://github.com/ehmpathy/with-simple-cache/workflows/deploy_on_tag/badge.svg)
 
-A wrapper that makes it simple to add caching to any function.
+A wrapper that makes it simple to add cache to any function.
 
 Notable features:
 
@@ -82,16 +82,16 @@ expect(await result1).toBe(await result2); // same exact object - the result of 
 
 # Examples
 
-### Add caching to an existing function
+### Add cache to an existing function
 
 ```ts
 import { createCache } from 'simple-in-memory-cache';
 import { withSimpleCache } from 'with-simple-cache';
 
-const getRecipesFromApiWithCaching = withSimpleCache(getRecipesFromApi, { cache: createCache() });
+const getRecipesFromApiWithCache = withSimpleCache(getRecipesFromApi, { cache: createCache() });
 ```
 
-### Define the function with caching directly
+### Define the function with cache directly
 
 ```ts
 import { createCache } from 'simple-in-memory-cache';
@@ -115,7 +115,7 @@ local storage, for example:
 ```ts
 import { withSimpleCache } from 'with-simple-cache';
 
-const getRecipesFromApiWithLocalStorageCaching = withSimpleCache(getRecipesFromApi, {
+const getRecipesFromApiWithLocalStorageCache = withSimpleCache(getRecipesFromApi, {
   // just define how a cache can `get` from and `set` to this data store
   cache: {
     get: (key) => localStorage.getItem(key),
@@ -128,13 +128,13 @@ const getRecipesFromApiWithLocalStorageCaching = withSimpleCache(getRecipesFromA
 
 some extra logic is required in order to work with asynchronous caches. therefore, a different wrapper is available for this usecase: `withSimpleCacheAsync`.
 
-asynchronous caching on-disk, for example:
+asynchronous cache on-disk, for example:
 
 ```ts
 import { createCache } from 'simple-on-disk-cache';
 import { withSimpleCacheAsync } from 'with-simple-cache';
 
-const getRecipesFromApiWithAsyncCaching = withSimpleCacheAsync(getRecipesFromApi, {
+const getRecipesFromApiWithAsyncCache = withSimpleCacheAsync(getRecipesFromApi, {
   cache: createCache({ directory: { s3: { bucket: '__bucket__', prefix: '__prefix__' } } }),
 });
 ```
@@ -147,7 +147,7 @@ serialize the key as the sha hash of the args, for example
 import { createCache } from 'simple-in-memory-cache';
 import { withSimpleCache } from 'with-simple-cache';
 
-const getRecipesFromApiWithLocalStorageCaching = withSimpleCache(getRecipesFromApi, {
+const getRecipesFromApiWithLocalStorageCache = withSimpleCache(getRecipesFromApi, {
   cache: createCache(),
   serialize: {
     key: (args) =>
@@ -164,7 +164,7 @@ if your cache requires you to store data as a string, as is typically the case w
 import { createCache } from 'simple-on-disk-cache';
 import { withSimpleCacheAsync } from 'with-simple-cache';
 
-const getRecipesFromApiWithLocalStorageCaching = withSimpleCachingAsync(getRecipesFromApi, {
+const getRecipesFromApiWithLocalStorageCache = withSimpleCacheAsync(getRecipesFromApi, {
   cache: createCache({ directory: { s3: { bucket: '__bucket__', prefix: '__prefix__' } } }),
   serialize: {
     value: async (response) => JSON.stringify(await response),
@@ -217,7 +217,7 @@ _note: array order **does** matter_
 
 ### Customizable cache data store
 
-You can easily use a custom cache or custom data store / persistance layer for caching with this wrapper.
+You can easily use a custom cache or custom data store / persistance layer with this wrapper.
 
 ```ts
 import { withSimpleCache } from 'with-simple-cache';

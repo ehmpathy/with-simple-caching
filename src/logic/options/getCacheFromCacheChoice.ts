@@ -12,19 +12,19 @@ export type SimpleCacheExtractionMethod<
 > = (args: { fromInput: LI }) => C;
 
 /**
- * how the cache can be specified for use with simple caching
+ * how the cache can be specified for use with simple cache
  * - either directly
  * - or through a cache extraction method, which grabs the cache from input args
  */
-export type WithSimpleCachingCacheOption<
+export type WithSimpleCacheChoice<
   LI extends any[],
   C extends SimpleCache<any>,
 > = C | SimpleCacheExtractionMethod<LI, C>;
 
 /**
- * how to extract the with simple caching cache option
+ * how to extract the with simple cache choice
  */
-export const getCacheFromCacheOption = <
+export const getCacheFromCacheChoice = <
   LI extends any[],
   C extends SimpleCache<any>,
 >({
@@ -32,7 +32,7 @@ export const getCacheFromCacheOption = <
   cacheOption,
 }: {
   forInput: LI;
-  cacheOption: WithSimpleCachingCacheOption<LI, C>;
+  cacheOption: WithSimpleCacheChoice<LI, C>;
 }): C => {
   if (isAFunction(cacheOption)) {
     const foundCache = cacheOption({ fromInput: forInput });

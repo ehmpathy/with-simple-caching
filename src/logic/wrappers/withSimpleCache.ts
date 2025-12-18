@@ -3,9 +3,9 @@ import { isNotUndefined, NotUndefined } from 'type-fns';
 
 import { SimpleSyncCache } from '../../domain/SimpleCache';
 import {
-  getCacheFromCacheOption,
-  WithSimpleCachingCacheOption,
-} from '../options/getCacheFromCacheOption';
+  getCacheFromCacheChoice,
+  WithSimpleCacheChoice,
+} from '../options/getCacheFromCacheChoice';
 import {
   defaultKeySerializationMethod,
   defaultShouldBypassGetMethod,
@@ -16,11 +16,11 @@ import {
 } from '../serde/defaults';
 
 /**
- * options to configure caching for use with-simple-cache
+ * options to configure cache for use with-simple-cache
  */
 export interface WithSimpleCacheOptions<
   /**
-   * the logic we are caching the responses for
+   * the logic we are adding cache for
    */
   L extends (...args: any) => any,
   /**
@@ -28,7 +28,7 @@ export interface WithSimpleCacheOptions<
    */
   C extends SimpleSyncCache<any>,
 > {
-  cache: WithSimpleCachingCacheOption<Parameters<L>, C>;
+  cache: WithSimpleCacheChoice<Parameters<L>, C>;
   serialize?: {
     key?: KeySerializationMethod<Parameters<L>>;
     value?: (output: ReturnType<L>) => NotUndefined<ReturnType<C['get']>>;
@@ -80,7 +80,7 @@ export interface WithSimpleCacheOptions<
  */
 export const withSimpleCache = <
   /**
-   * the logic we are caching the responses for
+   * the logic we are adding cache for
    */
   L extends (...args: any[]) => any,
   /**
@@ -110,7 +110,7 @@ export const withSimpleCache = <
     const key = serializeKey(args[0], args[1]);
 
     // define cache based on options
-    const cache = getCacheFromCacheOption({ forInput: args, cacheOption });
+    const cache = getCacheFromCacheChoice({ forInput: args, cacheOption });
 
     // see if its already cached
     const cachedValue: ReturnType<C['get']> = bypass.get?.(args)
