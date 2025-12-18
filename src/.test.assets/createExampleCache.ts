@@ -1,6 +1,6 @@
 import { UniDuration } from '@ehmpathy/uni-time';
 
-import { SimpleAsyncCache, SimpleSyncCache } from '../domain/SimpleCache';
+import { SimpleAsyncCache, SimpleSyncCache } from '@src/domain.objects/SimpleCache';
 
 export const createExampleSyncCache = () => {
   const store: Record<string, any> = {};

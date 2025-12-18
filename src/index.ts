@@ -1,32 +1,32 @@
 export {
-  SimpleCache,
   SimpleAsyncCache,
+  SimpleCache,
   SimpleSyncCache,
-} from './domain/SimpleCache';
+} from './domain.objects/SimpleCache';
 export {
-  WithSimpleCacheChoice,
   SimpleCacheExtractionMethod,
-} from './logic/options/getCacheFromCacheChoice';
+  WithSimpleCacheChoice,
+} from './domain.operations/options/getCacheFromCacheChoice';
 export {
-  KeySerializationMethod,
   defaultKeySerializationMethod,
   defaultValueDeserializationMethod,
   defaultValueSerializationMethod,
-} from './logic/serde/defaults';
+  KeySerializationMethod,
+} from './domain.operations/serde/defaults';
+export {
+  LogicWithExtendableCache,
+  withExtendableCache,
+} from './domain.operations/wrappers/withExtendableCache';
+export {
+  LogicWithExtendableCacheAsync,
+  withExtendableCacheAsync,
+} from './domain.operations/wrappers/withExtendableCacheAsync';
 export {
   WithSimpleCacheOptions,
   withSimpleCache,
-} from './logic/wrappers/withSimpleCache';
+} from './domain.operations/wrappers/withSimpleCache';
 export {
   WithSimpleCacheAsyncOptions,
   withSimpleCacheAsync,
-} from './logic/wrappers/withSimpleCacheAsync';
-export {
-  withExtendableCache,
-  LogicWithExtendableCache,
-} from './logic/wrappers/withExtendableCache';
-export {
-  withExtendableCacheAsync,
-  LogicWithExtendableCacheAsync,
-} from './logic/wrappers/withExtendableCacheAsync';
-export { withSimpleCacheOnDisk } from './logic/wrappers/withSimpleCacheOnDisk';
+} from './domain.operations/wrappers/withSimpleCacheAsync';
+export { withSimpleCacheOnDisk } from './domain.operations/wrappers/withSimpleCacheOnDisk';

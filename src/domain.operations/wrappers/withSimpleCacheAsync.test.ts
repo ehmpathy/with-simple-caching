@@ -1,10 +1,11 @@
 import { createCache } from 'simple-in-memory-cache';
 
-import { SimpleAsyncCache } from '../..';
 import {
   createExampleAsyncCache,
   createExampleSyncCache,
-} from '../../__test_assets__/createExampleCache';
+} from '@src/.test.assets/createExampleCache';
+import type { SimpleAsyncCache } from '@src/domain.operations/..';
+
 import { withSimpleCacheAsync } from './withSimpleCacheAsync';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

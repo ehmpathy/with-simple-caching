@@ -1,0 +1,10 @@
+{
+  "expiresAtMse": null,
+  "deserializedForObservability": true,
+  "value": [
+    {
+      "key": "test.name_casey.4732bbb2be25e01ee898ac851b9678dea3ebdb291e15349cfe7d250201d2f401",
+      "expiresAtMse": 1766066500272
+    }
+  ]
+}
