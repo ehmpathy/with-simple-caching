@@ -1,6 +1,11 @@
 import type { UniDuration } from '@ehmpathy/uni-time';
 import type { ProcedureInput } from 'procedure-fns';
-import { asSerialJSON, deSerialJSON, type SerialJSON } from 'serde-fns';
+import {
+  asSerialJSON,
+  deSerialJSON,
+  type Serializable,
+  type SerialJSON,
+} from 'serde-fns';
 import { castToSafeOnDiskCacheKey, createCache } from 'simple-on-disk-cache';
 
 import { withSimpleCacheAsync } from './withSimpleCacheAsync';
@@ -11,7 +16,7 @@ import { withSimpleCacheAsync } from './withSimpleCacheAsync';
  *   - embeds best practices of how to serialize and deserialize
  */
 export const withSimpleCacheOnDisk = <
-  TInput,
+  TInput extends Serializable,
   TContext,
   TResult extends Promise<any>,
 >(
